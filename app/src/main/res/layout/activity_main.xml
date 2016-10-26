@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="settings"
+            type="com.sensordc.Settings"/>
+    </data>
+
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:layout_marginLeft="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_vertical_margin"
+        android:layout_marginTop="@dimen/activity_horizontal_margin"
+        android:orientation="vertical"
+        tools:context="com.sensordc.MainActivity"
+        tools:ignore="MergeRootFrame">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:orientation="vertical">
+
+            <LinearLayout style="@style/SettingRow">
+
+                <TextView
+                    style="@style/InputLabel"
+                    android:labelFor="@+id/t1ambient"
+                    android:text="@string/t1ambient"/>
+
+                <EditText
+                    android:id="@+id/t1ambient"
+                    style="@style/Input"
+
+                    android:text="@{String.valueOf(settings.t1ambient)}"/>
+            </LinearLayout>
+
+            <LinearLayout style="@style/SettingRow">
+
+                <TextView
+                    style="@style/InputLabel"
+                    android:labelFor="@+id/t2ambient"
+                    android:text="@string/t2_ambient"/>
+
+                <EditText
+                    android:id="@+id/t2ambient"
+                    style="@style/Input"/>
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/SettingRow">
+
+                <TextView
+                    style="@style/InputLabel"
+                    android:labelFor="@+id/v1ambient"
+                    android:text="@string/v1_ambient"/>
+
+                <EditText
+                    android:id="@+id/v1ambient"
+                    style="@style/Input"/>
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/SettingRow">
+
+                <TextView
+                    style="@style/InputLabel"
+                    android:labelFor="@+id/v2ambient"
+                    android:text="@string/v2_ambient"/>
+
+                <EditText
+                    android:id="@+id/v2ambient"
+                    style="@style/Input"/>
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/SettingRow">
+
+                <TextView
+                    style="@style/InputLabel"
+                    android:labelFor="@+id/t1battery"
+                    android:text="@string/t1_battery"/>
+
+                <EditText
+                    android:id="@+id/t1battery"
+                    style="@style/Input"/>
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/SettingRow">
+
+                <TextView
+                    style="@style/InputLabel"
+                    android:labelFor="@+id/t2battery"
+                    android:text="@string/t2_battery"/>
+
+                <EditText
+                    android:id="@+id/t2battery"
+                    style="@style/Input"/>
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/SettingRow">
+
+                <TextView
+                    style="@style/InputLabel"
+                    android:labelFor="@+id/v1battery"
+                    android:text="@string/v1_battery"/>
+
+                <EditText
+                    android:id="@+id/v1battery"
+                    style="@style/Input"/>
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/SettingRow">
+
+                <TextView
+                    style="@style/InputLabel"
+                    android:labelFor="@+id/v2battery"
+                    android:text="@string/v2_battery"/>
+
+                <EditText
+                    android:id="@+id/v2battery"
+                    style="@style/Input"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/savebutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:onClick="clickSave"
+            android:text="@string/save"/>
+    </LinearLayout>
+</layout>
