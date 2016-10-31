@@ -126,12 +126,12 @@ public class SensorDCService<E> extends Service {
 
             Intent i1 = new Intent(context, DataUploadAlarmReceiver.class);
             i1.putExtra("deviceID", deviceID);
-            i1.putExtra("remotehost", remotehost);
-            i1.putExtra("remoteuser", remoteuser);
-            i1.putExtra("pubkey", pubkey);
-            i1.putExtra("privkey", privkey);
+            i1.putExtra("remoteHost", remotehost);
+            i1.putExtra("remoteUser", remoteuser);
+            i1.putExtra("publicKey", pubkey);
+            i1.putExtra("privateKey", privkey);
 
-            i1.putExtra("remoteport", remoteport);
+            i1.putExtra("remotePort", remoteport);
             i1.setClass(context, DataUploadAlarmReceiver.class);
 
             PendingIntent pi1 = PendingIntent.getBroadcast(context, 102, i1, PendingIntent.FLAG_UPDATE_CURRENT);
