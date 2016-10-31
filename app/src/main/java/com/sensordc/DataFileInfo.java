@@ -1,10 +1,10 @@
 package com.sensordc;
 
-public class DataFileInfo {
-    public String fileName;
-    public long fileSize;
+class DataFileInfo {
+    private String fileName;
+    private long fileSize;
 
-    public DataFileInfo(String fileName, long size) {
+    DataFileInfo(String fileName, long size) {
         this.fileName = fileName;
         this.fileSize = size;
     }
@@ -12,17 +12,16 @@ public class DataFileInfo {
 
     @Override
     public boolean equals(Object other) {
-        boolean result = false;
         if (other instanceof DataFileInfo) {
             DataFileInfo that = (DataFileInfo) other;
             if (this.fileName.equals(that.fileName) && this.fileSize == that.fileSize)
-                result = true;
+                return true;
         }
-        return result;
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return (int) (41 * (41 + fileName.hashCode()) + fileSize);
+        return (int) (41 * (41 + this.fileName.hashCode()) + this.fileSize);
     }
 }

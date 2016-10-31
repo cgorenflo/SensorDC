@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
     private void bindSettingsToViews() {
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         this.settings = new Settings(getSharedPreferences(PREFS_NAME, MODE_PRIVATE));
-        binding.setSettings(settings);
+        binding.setSettings(this.settings);
     }
 
     @Override
