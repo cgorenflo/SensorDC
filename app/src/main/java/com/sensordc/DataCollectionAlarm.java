@@ -1,9 +1,6 @@
 package com.sensordc;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.content.pm.PackageInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -29,6 +26,7 @@ import java.util.Enumeration;
 
 public class DataCollectionAlarm extends BroadcastReceiver implements SensorEventListener {
 
+    private static final String PREFS_NAME = "SensorDCPrefs";
     public static long SENSING_WINDOW;// MILLISECONDS
     public static long SENSING_FREQUENCY;// MILLISECONDS
     private static double DISCHARGE_CURRENT_RANGE_LOW = 490.00;
@@ -70,6 +68,7 @@ public class DataCollectionAlarm extends BroadcastReceiver implements SensorEven
     private AttachListener phidgetattachlistener;
     private DetachListener phidgetdetachlistener;
     private SensorChangeListener phidgetchangelistener;
+    private Settings settings;
 
     private void PopulateParameters(Intent intent) {
         SENSING_WINDOW = intent.getExtras().getLong("period_sense");
@@ -144,6 +143,7 @@ public class DataCollectionAlarm extends BroadcastReceiver implements SensorEven
         }
 
         PopulateParameters(intent);
+        this.settings = new Settings(context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE));
         alarmFireTs = System.nanoTime();
         lastLoggedTs = 0;
 
@@ -404,11 +404,12 @@ public class DataCollectionAlarm extends BroadcastReceiver implements SensorEven
                     if (index == 1)
                         phidgetvoltage = (((float) value / 200.00) - 2.5) / (0.0681);
                     if (index == 2)
-                        phidgetambienttemperature = interpolateTemperature(value, Settings.getT1ambient(), Settings
-                                .getT2ambient(), Settings.getV1battery(), Settings.getV2battery());
+                        phidgetambienttemperature = interpolateTemperature(value, settings.getT1ambient().getValue(),
+                                                                           settings.getT2ambient().getValue(),
+                                                                           settings.getV1battery().getValue(),
+                                                                           settings.getV2battery().getValue());
                     if (index == 3)
-                        phidgettemperature = interpolateTemperature(value, Settings.getT1battery(), Settings
-                                .getT2battery(), Settings.getV1battery(), Settings.getV2battery());
+                        phidgettemperature = interpolateTemperature(value, settings.getT1battery().getValue(), settings.getT2battery().getValue(), settings.getV1battery().getValue(), settings.getV2battery().getValue());
                     if (index == 4)
                         phidgetdischargecurrent = value;
                 }

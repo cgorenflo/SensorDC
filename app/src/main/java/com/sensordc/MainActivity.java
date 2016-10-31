@@ -11,9 +11,8 @@ import com.sensordc.databinding.ActivityMainBinding;
 
 public class MainActivity extends Activity {
     private static final String PREFS_NAME = "SensorDCPrefs";
-    private static final String TAG = "sensordcmainactivity";
+    private static final String TAG = MainActivity.class.getSimpleName();
     private Settings settings;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +21,7 @@ public class MainActivity extends Activity {
             restartSensorDCService();
             bindSettingsToViews();
         } catch (Exception e) {
-            SensorDCLog.i(TAG, " main activity onCreate " + e);
+            SensorDCLog.i(TAG, "onCreate " + e);
         }
     }
 
@@ -45,12 +44,15 @@ public class MainActivity extends Activity {
     private void restartSensorDCService() {
         Intent startServiceIntent = new Intent(this, SensorDCService.class);
 
-        boolean wasStopped = this.stopService(startServiceIntent);
-        SensorDCLog.i(TAG, " stopping service return value: " + wasStopped);
+        stopSensorDCService(startServiceIntent);
+        startSensorDCService(startServiceIntent);
+    }
 
+    private void startSensorDCService(Intent startServiceIntent) {
         SensorDCLog.i(TAG, " starting service ");
         ComponentName serviceName = this.startService(startServiceIntent);
         String logMessage = "startService return value: " + serviceName;
+
         if (serviceName == null) {
             SensorDCLog.e(TAG, logMessage);
         } else {
@@ -58,13 +60,18 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void stopSensorDCService(Intent startServiceIntent) {
+        boolean wasStopped = this.stopService(startServiceIntent);
+        SensorDCLog.i(TAG, " stopping service return value: " + wasStopped);
+    }
+
 
     public void clickSave(View saveButton) {
         this.settings.save();
-        ShowToastNotification();
+        showToastNotification();
     }
 
-    private void ShowToastNotification() {
+    private void showToastNotification() {
         Toast toast = Toast.makeText(this, "Saved. Good job!", Toast.LENGTH_SHORT);
         toast.show();
     }

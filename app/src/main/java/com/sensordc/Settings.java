@@ -1,19 +1,21 @@
 package com.sensordc;
 
 import android.content.SharedPreferences;
+import android.databinding.BaseObservable;
+import android.databinding.Bindable;
 
 import java.util.ArrayList;
 
 public class Settings {
-    private static Setting t1ambient = new Setting("t1ambient", 25.0f);
-    private static Setting t2ambient = new Setting("t2ambient", 45.0f);
-    private static Setting v1ambient = new Setting("v1ambient", 596.0f);
-    private static Setting v2ambient = new Setting("v2ambient", 636.0f);
-    private static Setting t1battery = new Setting("t1battery", 25.0f);
-    private static Setting t2battery = new Setting("t2battery", 45.0f);
-    private static Setting v1battery = new Setting("v1battery", 596.0f);
-    private static Setting v2battery = new Setting("v2battery", 636.0f);
     private final SharedPreferences storedSettings;
+    private Setting t1ambient = new Setting("t1ambient", 25.0f);
+    private Setting t2ambient = new Setting("t2ambient", 45.0f);
+    private Setting v1ambient = new Setting("v1ambient", 596.0f);
+    private Setting v2ambient = new Setting("v2ambient", 636.0f);
+    private Setting t1battery = new Setting("t1battery", 25.0f);
+    private Setting t2battery = new Setting("t2battery", 45.0f);
+    private Setting v1battery = new Setting("v1battery", 596.0f);
+    private Setting v2battery = new Setting("v2battery", 636.0f);
     private ArrayList<Setting> allSettings = populateAllSettings();
 
     Settings(SharedPreferences storedSettings) {
@@ -21,40 +23,44 @@ public class Settings {
         load();
     }
 
-    public static float getT1ambient() {
-        return t1ambient.value;
+    // Needed for data binding to view
+    public Setting getT1ambient() {
+        return t1ambient;
     }
 
-    public static void setT1ambient(String value) {
-        t1ambient.value = Float.valueOf(value);
+    // Needed for data binding to view
+    public Setting getT2ambient() {
+        return t2ambient;
     }
 
-    public static float getT2ambient() {
-        return t2ambient.value;
+    // Needed for data binding to view
+    public Setting getV1ambient() {
+        return v1ambient;
     }
 
-    public static float getV1ambient() {
-        return v1ambient.value;
+    // Needed for data binding to view
+    public Setting getV2ambient() {
+        return v2ambient;
     }
 
-    public static float getV2ambient() {
-        return v2ambient.value;
+    // Needed for data binding to view
+    public Setting getT1battery() {
+        return t1battery;
     }
 
-    public static float getT1battery() {
-        return t1battery.value;
+    // Needed for data binding to view
+    public Setting getT2battery() {
+        return t2battery;
     }
 
-    public static float getT2battery() {
-        return t2battery.value;
+    // Needed for data binding to view
+    public Setting getV1battery() {
+        return v1battery;
     }
 
-    public static float getV1battery() {
-        return v1battery.value;
-    }
-
-    public static float getV2battery() {
-        return v2battery.value;
+    // Needed for data binding to view
+    public Setting getV2battery() {
+        return v2battery;
     }
 
     private ArrayList<Setting> populateAllSettings() {
@@ -87,7 +93,7 @@ public class Settings {
         editor.apply();
     }
 
-    private static class Setting {
+    public class Setting extends BaseObservable {
         private final String settingName;
         private final float defaultValue;
         private float value;
@@ -98,11 +104,30 @@ public class Settings {
         }
 
         private void load(SharedPreferences storedSettings) {
-            this.value = storedSettings.getFloat(this.settingName, this.defaultValue);
+            this.setValue(storedSettings.getFloat(this.settingName, this.defaultValue));
         }
 
         private void save(SharedPreferences.Editor editor) {
-            editor.putFloat(this.settingName, value);
+            editor.putFloat(this.settingName, getValue());
+        }
+
+        float getValue() {
+            return value;
+        }
+
+        private void setValue(float value) {
+            this.value = value;
+        }
+
+        @Bindable
+        // Needed for data binding to view
+        public String getValueString() {
+            return String.format("%.2f", value);
+        }
+
+        // Needed for data binding to view
+        public void setValueString(String value) {
+            this.value = Float.valueOf(value);
         }
     }
 }

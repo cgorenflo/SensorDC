@@ -15,13 +15,15 @@
 
     <string name="period_upload">590007</string>
 
-    <string name="t1ambient">t1 (ambient)</string>
-    <string name="t2_ambient">t2 (ambient)</string>
-    <string name="v1_ambient">v1 (ambient)</string>
-    <string name="v2_ambient">v2 (ambient)</string>
-    <string name="t1_battery">t1 (battery)</string>
-    <string name="t2_battery">t2 (battery)</string>
-    <string name="v1_battery">v1 (battery)</string>
-    <string name="v2_battery">v2 (battery)</string>
+    <string name="t1ambient">Temperature 1</string>
+    <string name="t2_ambient">Temperature 2</string>
+    <string name="v1_ambient">Voltage 1</string>
+    <string name="v2_ambient">Voltage 2</string>
+    <string name="t1_battery">Temperature 1</string>
+    <string name="t2_battery">Temperature 2</string>
+    <string name="v1_battery">Voltage 1</string>
+    <string name="v2_battery">Voltage 2</string>
     <string name="save">Save</string>
+    <string name="battery">Battery</string>
+    <string name="ambient">Ambient</string>
 </resources>

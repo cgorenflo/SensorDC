@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class SensorData {
 
     private int versionCode;
+    private String imei;
     private double lat_gps = 0, long_gps = 0;
     private double lat_net = 0, long_net = 0;
 
