@@ -480,7 +480,7 @@ public class DataCollectionAlarm extends BroadcastReceiver implements SensorEven
         return new SensorData(versionCode, lat_gps, long_gps, lat_net, long_net, maccx, maccy, maccz, magx, magy,
                               magz, gyrx, gyry, gyrz, mpressure, light, proximity, gravity, linaccx, linaccy,
                               linaccz, msteps, phidgettemperature, phidgetambienttemperature, phidgetvoltage,
-                              phidgetcurrent, significantMotionTS, ipaddresses, phoneBatteryStatus,
+                phidgetcurrent, significantMotionTS, phoneBatteryStatus,
                               phidgetdischargecurrent);
     }
 

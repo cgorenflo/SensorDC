@@ -19,9 +19,11 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".SensorDCService"/>
         <service android:name=".DataUploadWakefulService"/>
-        <receiver android:name=".DataUploadAlarmReceiver">
+        <service android:name=".DataCollectionWakefulService"/>
 
-        </receiver>
+        <receiver android:name=".DataUploadAlarmReceiver"/>
+        <receiver android:name=".DataCollectionAlarmReceiver"/>
     </application>
 </manifest>

@@ -5,6 +5,7 @@ import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class Settings {
     private final SharedPreferences storedSettings;
@@ -24,75 +25,85 @@ public class Settings {
     }
 
     // Needed for data binding to view
+    @SuppressWarnings("WeakerAccess")
     public Setting getT1ambient() {
-        return t1ambient;
+        return this.t1ambient;
     }
 
     // Needed for data binding to view
+    @SuppressWarnings("WeakerAccess")
     public Setting getT2ambient() {
-        return t2ambient;
+        return this.t2ambient;
     }
 
     // Needed for data binding to view
+    @SuppressWarnings("WeakerAccess")
     public Setting getV1ambient() {
-        return v1ambient;
+        return this.v1ambient;
     }
 
     // Needed for data binding to view
+    @SuppressWarnings("WeakerAccess")
     public Setting getV2ambient() {
-        return v2ambient;
+        return this.v2ambient;
     }
 
     // Needed for data binding to view
+    @SuppressWarnings("WeakerAccess")
     public Setting getT1battery() {
-        return t1battery;
+        return this.t1battery;
     }
 
     // Needed for data binding to view
+    @SuppressWarnings("WeakerAccess")
     public Setting getT2battery() {
-        return t2battery;
+        return this.t2battery;
     }
 
     // Needed for data binding to view
+    @SuppressWarnings("WeakerAccess")
     public Setting getV1battery() {
-        return v1battery;
+        return this.v1battery;
     }
 
     // Needed for data binding to view
+    @SuppressWarnings("WeakerAccess")
     public Setting getV2battery() {
-        return v2battery;
+        return this.v2battery;
     }
 
     private ArrayList<Setting> populateAllSettings() {
         ArrayList<Setting> allSets = new ArrayList<>();
 
-        allSets.add(t1ambient);
-        allSets.add(t2ambient);
-        allSets.add(v1ambient);
-        allSets.add(v2ambient);
+        allSets.add(this.t1ambient);
+        allSets.add(this.t2ambient);
+        allSets.add(this.v1ambient);
+        allSets.add(this.v2ambient);
 
-        allSets.add(t1battery);
-        allSets.add(t2battery);
-        allSets.add(v1battery);
-        allSets.add(v2battery);
+        allSets.add(this.t1battery);
+        allSets.add(this.t2battery);
+        allSets.add(this.v1battery);
+        allSets.add(this.v2battery);
 
         return allSets;
     }
 
     private void load() {
-        for (Setting setting : allSettings) {
-            setting.load(storedSettings);
+        for (Setting setting : this.allSettings) {
+            setting.load(this.storedSettings);
         }
     }
 
     void save() {
-        SharedPreferences.Editor editor = storedSettings.edit();
-        for (Setting setting : allSettings) {
+        SharedPreferences.Editor editor = this.storedSettings.edit();
+        for (Setting setting : this.allSettings) {
             setting.save(editor);
         }
         editor.apply();
     }
 
+    // Needed for data binding to view
+    @SuppressWarnings("WeakerAccess")
     public class Setting extends BaseObservable {
         private final String settingName;
         private final float defaultValue;
@@ -112,7 +123,7 @@ public class Settings {
         }
 
         float getValue() {
-            return value;
+            return this.value;
         }
 
         private void setValue(float value) {
@@ -122,9 +133,10 @@ public class Settings {
         @Bindable
         // Needed for data binding to view
         public String getValueString() {
-            return String.format("%.2f", value);
+            return String.format(Locale.getDefault(), "%.2f", this.value);
         }
 
+        @Bindable
         // Needed for data binding to view
         public void setValueString(String value) {
             this.value = Float.valueOf(value);

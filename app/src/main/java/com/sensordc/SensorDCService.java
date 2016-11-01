@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.IBinder;
+import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -17,7 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class SensorDCService<E> extends Service {
+public class SensorDCService extends Service {
 
     // If you want to change any of these params, go to values->strings.xml
     private static String TAG = "sensordcservice";
@@ -149,9 +150,9 @@ public class SensorDCService<E> extends Service {
         }
     }
 
+    @Nullable
     @Override
     public IBinder onBind(Intent arg0) {
-        // TODO Auto-generated method stub
         return null;
     }
 

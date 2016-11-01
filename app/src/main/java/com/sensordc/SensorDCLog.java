@@ -15,7 +15,7 @@ import java.util.Locale;
 
 public class SensorDCLog {
 
-    public static String DataLogDirectory = Environment.getExternalStorageDirectory().getAbsolutePath() + File
+    static String DataLogDirectory = Environment.getExternalStorageDirectory().getAbsolutePath() + File
             .separator + "sensordc" + File.separator + "data";
     private static List<String> datalogs = new ArrayList<>();
 
@@ -38,7 +38,7 @@ public class SensorDCLog {
         }
     }
 
-    public static void DumpDataLogsToDisk() {
+    static void DumpDataLogsToDisk() {
         synchronized (datalogs) {
 
             for (String line : datalogs) {
@@ -48,18 +48,18 @@ public class SensorDCLog {
         }
     }
 
-    public static String getCurrentTimeStamp() {
+    static String getCurrentTimeStamp() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CANADA);
         return sdf.format(Calendar.getInstance().getTime());
     }
 
-    public static String getCurrentFileName() {
+    static String getCurrentFileName() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH", Locale.CANADA);
         String date_hour = sdf.format(Calendar.getInstance().getTime());
         return "datav2." + date_hour + ".log";
     }
 
-    public static String getCurrentFileName_GPSLogger() {
+    static String getCurrentFileName_GPSLogger() {
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         int year = Calendar.getInstance().get(Calendar.YEAR);
         int month = Calendar.getInstance().get(Calendar.MONTH);

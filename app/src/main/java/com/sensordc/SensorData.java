@@ -2,125 +2,63 @@ package com.sensordc;
 
 import java.util.ArrayList;
 
-public class SensorData {
+class SensorData {
 
     private int versionCode;
     private String imei;
-    private double lat_gps = 0, long_gps = 0;
-    private double lat_net = 0, long_net = 0;
 
-    private float maccx = 0, maccy = 0, maccz = 0;
-    private float magx = 0, magy = 0, magz = 0;
-    private float gyrx = 0, gyry = 0, gyrz = 0;
-    private float mpressure = 0, light = 0, proximity = 0;
-    private float gravity = (float) 0.00;
-    private float linaccx = 0, linaccy = 0, linaccz = 0;
-    private int msteps = 0;
+    private float gpsLatitude;
+    private float gpsLongitude;
 
-    private String significantMotionTS;
+    private float linearAccelerationX;
+    private float linearAccelerationY;
+    private float linearAccelerationZ;
 
-    private double phidgettemperature = Double.MIN_VALUE;
-    private double phidgetambienttemperature = Double.MIN_VALUE;
-    private double phidgetvoltage = Double.MIN_VALUE;
-    private double phidgetcurrent = Double.MIN_VALUE;
-    private double phidgetdischargecurrent = Double.MIN_VALUE;
-
-    private String ipaddresses = "";
-    private String phonebatterystatus = "";
-
-    public SensorData(int versionCode, double lat_gps, double long_gps, double lat_net, double long_net, float maccx,
-                      float maccy, float maccz, float magx, float magy, float magz, float gyrx, float gyry, float
-                              gyrz, float mpressure, float light, float proximity, float gravity, float linaccx,
-                      float linaccy, float linaccz, int msteps, double phidtemperature, double
-                              phidgetambienttemperature, double phidgetvoltage, double phidgetcurrent, String
-                              significantMotionTS, String ipaddresses, String phonebatterystatus, double
-                              phidgetdischargecurrent) {
-        this.versionCode = versionCode;
-        this.lat_gps = lat_gps;
-        this.long_gps = long_gps;
-        this.lat_net = lat_net;
-        this.long_net = long_net;
-
-        this.maccx = maccx;
-        this.maccy = maccy;
-        this.maccz = maccz;
-
-        this.magx = magx;
-        this.magy = magy;
-        this.magz = magz;
-
-        this.gyrx = gyrx;
-        this.gyry = gyry;
-        this.gyrz = gyrz;
-
-        this.mpressure = mpressure;
-        this.light = light;
-        this.proximity = proximity;
-        this.gravity = gravity;
-        this.linaccx = linaccx;
-        this.linaccy = linaccy;
-        this.linaccz = linaccz;
-        this.msteps = msteps;
-
-        this.phidgettemperature = phidtemperature;
-        this.phidgetambienttemperature = phidgetambienttemperature;
-        this.phidgetvoltage = phidgetvoltage;
-        this.phidgetcurrent = phidgetcurrent;
-        this.phidgetdischargecurrent = phidgetdischargecurrent;
-
-        this.significantMotionTS = significantMotionTS;
-        this.ipaddresses = ipaddresses;
-        this.phonebatterystatus = phonebatterystatus;
-    }
+    private float rotationX;
+    private float rotationY;
+    private float rotationZ;
+    private float rotationScalar;
+    private float gpsAccuracy;
+    private float batteryTemperature;
+    private float ambientTemperature;
+    private float voltage;
+    private float current;
+    private float dischargeCurrent;
+    private float batteryPercentage;
+    private Boolean isUSBCharge;
+    private Boolean isACCharge;
+    private Boolean isChargingOrFull;
 
     public String toString() {
-        ArrayList<String> sensorValues = new ArrayList<String>();
-        String firstSensorValue = replaceNaNByNull(versionCode);
-        sensorValues.add(replaceNaNByNull(lat_gps));
-        sensorValues.add(replaceNaNByNull(long_gps));
-        sensorValues.add(replaceNaNByNull(lat_net));
-        sensorValues.add(replaceNaNByNull(long_net));
-        sensorValues.add(replaceNaNByNull(maccx));
-        sensorValues.add(replaceNaNByNull(maccy));
-        sensorValues.add(replaceNaNByNull(maccz));
-        sensorValues.add(replaceNaNByNull(magx));
-        sensorValues.add(replaceNaNByNull(magy));
-        sensorValues.add(replaceNaNByNull(magz));
-        sensorValues.add(replaceNaNByNull(gyrx));
-        sensorValues.add(replaceNaNByNull(gyry));
-        sensorValues.add(replaceNaNByNull(gyrz));
-        sensorValues.add(replaceNaNByNull(mpressure));
-        sensorValues.add(replaceNaNByNull(light));
-        sensorValues.add(replaceNaNByNull(gravity));
-        sensorValues.add(replaceNaNByNull(linaccx));
-        sensorValues.add(replaceNaNByNull(linaccy));
-        sensorValues.add(replaceNaNByNull(linaccz));
-        sensorValues.add(Integer.toString(msteps));
-        sensorValues.add(replaceNaNByNull(phidgettemperature));
-        sensorValues.add(replaceNaNByNull(phidgetambienttemperature));
-        sensorValues.add(replaceNaNByNull(phidgetvoltage));
-        sensorValues.add(replaceNaNByNull(phidgetcurrent));
-        sensorValues.add(significantMotionTS);
-        sensorValues.add(replaceNaNByNull(proximity));
-        sensorValues.add(ipaddresses);
-        sensorValues.add(phonebatterystatus);
-        sensorValues.add(replaceNaNByNull(phidgetdischargecurrent));
+        StringBuilder sensorData = new StringBuilder(this.imei);
 
-        StringBuilder sensorData = new StringBuilder(firstSensorValue);
+        ArrayList<String> sensorValues = new ArrayList<>();
+        sensorValues.add(replaceNaNByNull(this.versionCode));
+        sensorValues.add(replaceNaNByNull(this.gpsLatitude));
+        sensorValues.add(replaceNaNByNull(this.gpsLongitude));
+        sensorValues.add(replaceNaNByNull(this.gpsAccuracy));
+        sensorValues.add(replaceNaNByNull(this.linearAccelerationX));
+        sensorValues.add(replaceNaNByNull(this.linearAccelerationY));
+        sensorValues.add(replaceNaNByNull(this.linearAccelerationZ));
+        sensorValues.add(replaceNaNByNull(this.rotationX));
+        sensorValues.add(replaceNaNByNull(this.rotationY));
+        sensorValues.add(replaceNaNByNull(this.rotationZ));
+        sensorValues.add(replaceNaNByNull(this.rotationScalar));
+        sensorValues.add(replaceNaNByNull(this.batteryTemperature));
+        sensorValues.add(replaceNaNByNull(this.ambientTemperature));
+        sensorValues.add(replaceNaNByNull(this.voltage));
+        sensorValues.add(replaceNaNByNull(this.current));
+        sensorValues.add(replaceNaNByNull(this.dischargeCurrent));
+        sensorValues.add(replaceNaNByNull(this.batteryPercentage));
+        sensorValues.add(String.valueOf(this.isChargingOrFull));
+        sensorValues.add(String.valueOf(this.isUSBCharge));
+        sensorValues.add(String.valueOf(this.isACCharge));
 
         for (String value : sensorValues) {
             sensorData.append(",").append(value);
         }
 
-
         return sensorData.toString();
-    }
-
-    private String replaceNaNByNull(double value) {
-        if (Double.isNaN(Math.abs(value)))
-            return "";
-        else
-            return Double.toString(value);
     }
 
     private String replaceNaNByNull(float value) {
@@ -128,5 +66,94 @@ public class SensorData {
             return "";
         else
             return Float.toString(value);
+    }
+
+    boolean isInStandBy() {
+        //TODO: implement
+        return false;
+    }
+
+    void setVersionCode(int versionCode) {
+        this.versionCode = versionCode;
+    }
+
+    void setLinearAccelerationX(float accelerationX) {
+        this.linearAccelerationX = accelerationX;
+    }
+
+    void setLinearAccelerationY(float accelerationY) {
+        this.linearAccelerationY = accelerationY;
+    }
+
+    void setLinearAccelerationZ(float accelerationZ) {
+        this.linearAccelerationZ = accelerationZ;
+    }
+
+    void setRotationX(float rotationX) {
+        this.rotationX = rotationX;
+    }
+
+    void setRotationY(float rotationY) {
+        this.rotationY = rotationY;
+    }
+
+    void setRotationZ(float rotationZ) {
+        this.rotationZ = rotationZ;
+    }
+
+    void setRotationScalar(float rotationScalar) {
+        this.rotationScalar = rotationScalar;
+    }
+
+    void setGPSLatitude(float latitude) {
+        this.gpsLatitude = latitude;
+    }
+
+    void setGPSLongitude(float longitude) {
+        this.gpsLongitude = longitude;
+    }
+
+    void setGPSAccuracy(float accuracy) {
+        this.gpsAccuracy = accuracy;
+    }
+
+    void setBatteryTemperature(float batteryTemperature) {
+        this.batteryTemperature = batteryTemperature;
+    }
+
+    void setAmbientTemperature(float ambientTemperature) {
+        this.ambientTemperature = ambientTemperature;
+    }
+
+    void setVoltage(float voltage) {
+        this.voltage = voltage;
+    }
+
+    void setCurrent(float current) {
+        this.current = current;
+    }
+
+    void setDischargeCurrent(float dischargeCurrent) {
+        this.dischargeCurrent = dischargeCurrent;
+    }
+
+    void setBatteryPercentage(float batteryPercentage) {
+        this.batteryPercentage = batteryPercentage;
+    }
+
+    void setIsUSBCharge(Boolean isUSBCharge) {
+        this.isUSBCharge = isUSBCharge;
+    }
+
+    void setIsACCharge(Boolean isACCharge) {
+        this.isACCharge = isACCharge;
+    }
+
+    void setIsChargingOrFull(Boolean isChargingOrFull) {
+        this.isChargingOrFull = isChargingOrFull;
+    }
+
+    void setIMEI(String IMEI) {
+        this.imei = IMEI;
     }
 }
