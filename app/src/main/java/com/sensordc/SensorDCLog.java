@@ -15,9 +15,9 @@ import java.util.Locale;
 
 public class SensorDCLog {
 
+    private static final List<String> datalogs = new ArrayList<>();
     static String DataLogDirectory = Environment.getExternalStorageDirectory().getAbsolutePath() + File
             .separator + "sensordc" + File.separator + "data";
-    private static List<String> datalogs = new ArrayList<>();
 
     public static void e(String tag, String message) {
         Log.e(tag, message);
@@ -48,27 +48,6 @@ public class SensorDCLog {
         }
     }
 
-    static String getCurrentTimeStamp() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CANADA);
-        return sdf.format(Calendar.getInstance().getTime());
-    }
-
-    static String getCurrentFileName() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH", Locale.CANADA);
-        String date_hour = sdf.format(Calendar.getInstance().getTime());
-        return "datav2." + date_hour + ".log";
-    }
-
-    static String getCurrentFileName_GPSLogger() {
-        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        int year = Calendar.getInstance().get(Calendar.YEAR);
-        int month = Calendar.getInstance().get(Calendar.MONTH);
-        int date = Calendar.getInstance().get(Calendar.DATE);
-        String retVal = "gps-" + year + "-" + month + "-" + date + "-" + hour + ".txt";
-        Log.d("gpslogger", retVal);
-        return retVal;
-    }
-
     private static void WriteToFile(String message) {
         try {
             String filename = getCurrentFileName();
@@ -97,6 +76,27 @@ public class SensorDCLog {
             e.printStackTrace();
         }
 
+    }
+
+    static String getCurrentFileName() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH", Locale.CANADA);
+        String date_hour = sdf.format(Calendar.getInstance().getTime());
+        return "datav2." + date_hour + ".log";
+    }
+
+    static String getCurrentTimeStamp() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CANADA);
+        return sdf.format(Calendar.getInstance().getTime());
+    }
+
+    static String getCurrentFileName_GPSLogger() {
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        int year = Calendar.getInstance().get(Calendar.YEAR);
+        int month = Calendar.getInstance().get(Calendar.MONTH);
+        int date = Calendar.getInstance().get(Calendar.DATE);
+        String retVal = "gps-" + year + "-" + month + "-" + date + "-" + hour + ".txt";
+        Log.d("gpslogger", retVal);
+        return retVal;
     }
 
 }

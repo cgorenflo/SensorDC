@@ -5,13 +5,11 @@ import android.content.Intent;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 public class DataCollectionWakefulService extends IntentService {
 
     private static final String TAG = DataCollectionWakefulService.class.getSimpleName();
-    private static final long SENSOR_RECORDING_DELAY_IN_MS = 1000;
-    private static final int CONSECUTIVE_SLEEP_CYCLE_THRESHOLD = 30;
-    private static final String PREFS_NAME = "SensorDCPrefs";
 
     public DataCollectionWakefulService() {
         super(TAG);
@@ -19,29 +17,13 @@ public class DataCollectionWakefulService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        long minTimeBetweenGPSUpdates = intent.getExtras().getLong("location_gps_timesenstivity");
-        float minDistanceBetweenGPSUpdates = intent.getExtras().getFloat("location_gps_senstivity");
+        long minTimeBetweenGPSUpdates = R.integer.minDistanceBetweenGPSUpdates;
+        float minDistanceBetweenGPSUpdates = R.integer.minTimeBetweenGPSUpdatesInMS;
 
-        // If unregistering the sensor listeners fails, the service needs to at least give up the wake lock,
+        // If unregistering the sensor listeners fails, the service needs to at least release the wake lock,
         // therefore those steps are not done in the same try-finally block
         try {
-            Sensors sensors = new Sensors((SensorManager) this.getSystemService(SENSOR_SERVICE),
-                    (LocationManager) this.getSystemService(LOCATION_SERVICE), new CustomBatteryManager(this),
-                    (TelephonyManager) getSystemService(TELEPHONY_SERVICE),
-                    new PhidgetManager(this, new Settings(getSharedPreferences(PREFS_NAME, MODE_PRIVATE))));
-
-            sensors.initializeSensors(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates);
-            try {
-
-                logSensorDataInIntervals(sensors);
-
-            } catch (InterruptedException e) {
-                SensorDCLog.e(TAG, e.getMessage());
-            } finally {
-                SensorDCLog.DumpDataLogsToDisk();
-                sensors.stop();
-            }
-
+            handleDataCollection(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates);
         } catch (Exception e) {
             SensorDCLog.e(TAG, e.getMessage());
         } finally {
@@ -49,23 +31,42 @@ public class DataCollectionWakefulService extends IntentService {
         }
     }
 
-    private void logSensorDataInIntervals(Sensors sensors) throws InterruptedException {
-        Boolean isInStandby = false;
-        int consecutiveSleepCycles = 0;
-        while (!isInStandby && consecutiveSleepCycles < CONSECUTIVE_SLEEP_CYCLE_THRESHOLD) {
-            if (sensors.areAllUpdated()) {
-                SensorData sensorData = sensors.getCurrentSensorData();
-                isInStandby = sensorData.isInStandBy();
-                consecutiveSleepCycles = 0;
+    private void handleDataCollection(long minTimeBetweenGPSUpdates, float minDistanceBetweenGPSUpdates) {
+        Settings settings = new Settings(
+                getSharedPreferences(getResources().getString(R.string.settingPreferenceName), MODE_PRIVATE));
 
-                SensorDCLog.data(SensorDCLog.getCurrentTimeStamp(), sensorData.toString(), this.getClass());
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 
-            } else {
-                consecutiveSleepCycles += 1;
-                SensorDCLog.i("Not all sensors were updated in the period of one second.");
+        SensorManager sensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
+        LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+        CustomBatteryManager batteryManager = new CustomBatteryManager(this);
+        PhoneSensors phoneSensors = new PhoneSensors(sensorManager, locationManager, batteryManager);
+
+        PhidgetSensors phidgetSensors = new PhidgetSensors(new PhidgetManager(this, settings));
+
+        SensorDataCollector sensorDataCollector = new SensorDataCollector(telephonyManager, phoneSensors,
+                phidgetSensors);
+
+        try {
+            sensorDataCollector.initializeSensors(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates);
+            logSensorDataInIntervals(sensorDataCollector);
+        } finally {
+            SensorDCLog.DumpDataLogsToDisk();
+            sensorDataCollector.stop();
+        }
+    }
+
+    private void logSensorDataInIntervals(SensorDataCollector sensorDataCollector) {
+        SensorData sensorData = SensorData.Initialize();
+        while (!sensorData.isInStandBy()) {
+            sensorData = sensorDataCollector.getCurrentSensorData();
+            SensorDCLog.data(SensorDCLog.getCurrentTimeStamp(), sensorData.toString(), this.getClass());
+
+            try {
+                Thread.sleep(getResources().getInteger(R.integer.sensorRecordingDelayInMS));
+            } catch (InterruptedException e) {
+                SensorDCLog.e(TAG, Log.getStackTraceString(e));
             }
-
-            Thread.sleep(SENSOR_RECORDING_DELAY_IN_MS);
         }
     }
 }

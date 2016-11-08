@@ -1,18 +1,18 @@
 package com.sensordc;
 
-import android.hardware.SensorManager;
-import android.location.LocationManager;
 import android.telephony.TelephonyManager;
 
-class Sensors {
+class SensorDataCollector {
     private final PhoneSensors phoneSensors;
-    private PhidgetSensors phidgetSensors;
+    private final PhidgetSensors phidgetSensors;
+    private final TelephonyManager telephonyManager;
     private boolean isInitialized;
+    private String imei;
 
-    Sensors(SensorManager sensorManager, LocationManager locationManager, CustomBatteryManager batteryManager,
-            TelephonyManager telephonyManager, PhidgetManager phidgetManager) {
-        this.phoneSensors = new PhoneSensors(sensorManager, locationManager, batteryManager, telephonyManager);
-        this.phidgetSensors = new PhidgetSensors(phidgetManager);
+    SensorDataCollector(TelephonyManager telephonyManager, PhoneSensors phoneSensors, PhidgetSensors phidgetSensors) {
+        this.telephonyManager = telephonyManager;
+        this.phoneSensors = phoneSensors;
+        this.phidgetSensors = phidgetSensors;
 
         this.isInitialized = false;
     }
@@ -41,7 +41,7 @@ class Sensors {
         int versionCode = BuildConfig.VERSION_CODE;
         SensorData sensorData = new SensorData();
         sensorData.setVersionCode(versionCode);
-        sensorData.setIMEI(this.phoneSensors.getIMEI());
+        sensorData.setIMEI(getIMEI());
 
         float[] accelerationValues = this.phoneSensors.getLinearAcceleration();
         sensorData.setLinearAccelerationX(accelerationValues[0]);
@@ -72,5 +72,9 @@ class Sensors {
         sensorData.setDischargeCurrent(this.phidgetSensors.getDischargeCurrent());
 
         return sensorData;
+    }
+
+    private String getIMEI() {
+        return this.imei != null ? this.imei : (this.imei = this.telephonyManager.getDeviceId());
     }
 }

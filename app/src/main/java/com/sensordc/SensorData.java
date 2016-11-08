@@ -3,34 +3,42 @@ package com.sensordc;
 import java.util.ArrayList;
 
 class SensorData {
-
+    private static final Float CURRENT_INACTIVE_THRESHOLD = 50f;
+    private static final Float DISCHARGE_CURRENT_INACTIVE_LOWER_THRESHOLD = 490.00f;
+    private static final Float DISCHARGE_CURRENT_INACTIVE_HIGHER_THRESHOLD = 510.00f;
     private int versionCode;
-    private String imei;
-
-    private float gpsLatitude;
-    private float gpsLongitude;
-
-    private float linearAccelerationX;
-    private float linearAccelerationY;
-    private float linearAccelerationZ;
-
-    private float rotationX;
-    private float rotationY;
-    private float rotationZ;
-    private float rotationScalar;
-    private float gpsAccuracy;
-    private float batteryTemperature;
-    private float ambientTemperature;
-    private float voltage;
-    private float current;
-    private float dischargeCurrent;
-    private float batteryPercentage;
+    private String deviceID;
+    private Float gpsLatitude;
+    private Float gpsLongitude;
+    private Float linearAccelerationX;
+    private Float linearAccelerationY;
+    private Float linearAccelerationZ;
+    private Float rotationX;
+    private Float rotationY;
+    private Float rotationZ;
+    private Float rotationScalar;
+    private Float gpsAccuracy;
+    private Float batteryTemperature;
+    private Float ambientTemperature;
+    private Float voltage;
+    private Float current;
+    private Float dischargeCurrent;
+    private Float batteryPercentage;
     private Boolean isUSBCharge;
     private Boolean isACCharge;
     private Boolean isChargingOrFull;
 
+    static SensorData Initialize() {
+        return new SensorData() {
+            @Override
+            boolean isInStandBy() {
+                return false;
+            }
+        };
+    }
+
     public String toString() {
-        StringBuilder sensorData = new StringBuilder(this.imei);
+        StringBuilder sensorData = new StringBuilder(this.deviceID);
 
         ArrayList<String> sensorValues = new ArrayList<>();
         sensorValues.add(replaceNaNByNull(this.versionCode));
@@ -69,75 +77,85 @@ class SensorData {
     }
 
     boolean isInStandBy() {
-        //TODO: implement
-        return false;
+
+        boolean currentShowsStandBy = this.current != Float.NaN && this.current <= CURRENT_INACTIVE_THRESHOLD;
+        //this.dischargeCurrent != Float.NaN is erroneously interpreted as constant by the lint
+        //noinspection ConstantConditions
+        boolean dischargeCurrentShowsStandBy = this.dischargeCurrent != Float.NaN &&
+                                               this.dischargeCurrent >= DISCHARGE_CURRENT_INACTIVE_LOWER_THRESHOLD &&
+                                               this.dischargeCurrent <= DISCHARGE_CURRENT_INACTIVE_HIGHER_THRESHOLD;
+
+        //first part is erroneously interpreted as constant by the lint
+        //noinspection ConstantConditions
+        return ((this.current == Float.NaN && this.dischargeCurrent == Float.NaN) ||
+                (currentShowsStandBy && dischargeCurrentShowsStandBy));
     }
 
     void setVersionCode(int versionCode) {
         this.versionCode = versionCode;
     }
 
-    void setLinearAccelerationX(float accelerationX) {
+    void setLinearAccelerationX(Float accelerationX) {
         this.linearAccelerationX = accelerationX;
     }
 
-    void setLinearAccelerationY(float accelerationY) {
+    void setLinearAccelerationY(Float accelerationY) {
         this.linearAccelerationY = accelerationY;
     }
 
-    void setLinearAccelerationZ(float accelerationZ) {
+    void setLinearAccelerationZ(Float accelerationZ) {
         this.linearAccelerationZ = accelerationZ;
     }
 
-    void setRotationX(float rotationX) {
+    void setRotationX(Float rotationX) {
         this.rotationX = rotationX;
     }
 
-    void setRotationY(float rotationY) {
+    void setRotationY(Float rotationY) {
         this.rotationY = rotationY;
     }
 
-    void setRotationZ(float rotationZ) {
+    void setRotationZ(Float rotationZ) {
         this.rotationZ = rotationZ;
     }
 
-    void setRotationScalar(float rotationScalar) {
+    void setRotationScalar(Float rotationScalar) {
         this.rotationScalar = rotationScalar;
     }
 
-    void setGPSLatitude(float latitude) {
+    void setGPSLatitude(Float latitude) {
         this.gpsLatitude = latitude;
     }
 
-    void setGPSLongitude(float longitude) {
+    void setGPSLongitude(Float longitude) {
         this.gpsLongitude = longitude;
     }
 
-    void setGPSAccuracy(float accuracy) {
+    void setGPSAccuracy(Float accuracy) {
         this.gpsAccuracy = accuracy;
     }
 
-    void setBatteryTemperature(float batteryTemperature) {
+    void setBatteryTemperature(Float batteryTemperature) {
         this.batteryTemperature = batteryTemperature;
     }
 
-    void setAmbientTemperature(float ambientTemperature) {
+    void setAmbientTemperature(Float ambientTemperature) {
         this.ambientTemperature = ambientTemperature;
     }
 
-    void setVoltage(float voltage) {
+    void setVoltage(Float voltage) {
         this.voltage = voltage;
     }
 
-    void setCurrent(float current) {
+    void setCurrent(Float current) {
         this.current = current;
     }
 
-    void setDischargeCurrent(float dischargeCurrent) {
+    void setDischargeCurrent(Float dischargeCurrent) {
         this.dischargeCurrent = dischargeCurrent;
     }
 
-    void setBatteryPercentage(float batteryPercentage) {
+    void setBatteryPercentage(Float batteryPercentage) {
         this.batteryPercentage = batteryPercentage;
     }
 
@@ -153,7 +171,7 @@ class SensorData {
         this.isChargingOrFull = isChargingOrFull;
     }
 
-    void setIMEI(String IMEI) {
-        this.imei = IMEI;
+    void setIMEI(String imei) {
+        this.deviceID = imei;
     }
 }

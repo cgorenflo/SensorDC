@@ -3,7 +3,13 @@
           xmlns:tools="http://schemas.android.com/tools"
           package="com.sensordc">
 
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <uses-feature android:name="android.hardware.usb.host"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -25,5 +31,16 @@
 
         <receiver android:name=".DataUploadAlarmReceiver"/>
         <receiver android:name=".DataCollectionAlarmReceiver"/>
+        <receiver android:name=".PackageReplacedReceiver"/>
+        <receiver
+            android:name=".MainReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

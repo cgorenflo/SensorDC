@@ -4,7 +4,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 
-class CustomSensorEventListener implements SensorEventListener, CustomListener {
+class CustomSensorEventListener implements SensorEventListener {
     private static final long TIMESTAMP_NOT_SET = -1;
     private long lastRetrievedTimeStamp;
     private SensorValues sensorEvent;
@@ -23,19 +23,18 @@ class CustomSensorEventListener implements SensorEventListener, CustomListener {
     public void onAccuracyChanged(Sensor sensor, int i) {
     }
 
-    @Override
-    public SensorValues getCurrentValues() {
+    SensorValues getCurrentValues() {
         // Event might change in the meantime, so store reference locally
-        SensorValues returnedEvent = this.sensorEvent;
+        SensorValues currentValues = this.sensorEvent;
 
-        if (returnedEvent == null)
+        if (currentValues == null)
             return null;
 
-        this.lastRetrievedTimeStamp = returnedEvent.getTime();
-        return returnedEvent;
+        this.lastRetrievedTimeStamp = currentValues.getTime();
+        return currentValues;
     }
 
-    public Boolean hasBeenUpdatedSinceLastRetrieval() {
+    Boolean hasBeenUpdatedSinceLastRetrieval() {
         return this.lastRetrievedTimeStamp != this.sensorEvent.getTime();
     }
 }

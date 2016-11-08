@@ -1,20 +1,5 @@
 <resources>
     <string name="app_name">SensorDC</string>
-
-    <string name="remotehost">blizzard.cs.uwaterloo.ca</string>
-    <string name="remoteuser">sensordc</string>
-    <string name="remoteport">22</string>
-    <string name="period_poll">60000</string>
-    <string name="period_sense">59000</string>
-    <string name="period_record">1000</string>
-
-    <string name="location_net_senstivity">10</string>
-    <string name="location_net_timesenstivity">5000</string>
-    <string name="location_gps_timesenstivity">5000</string>
-    <string name="location_gps_senstivity">10</string>
-
-    <string name="period_upload">590007</string>
-
     <string name="t1ambient">Temperature 1</string>
     <string name="t2_ambient">Temperature 2</string>
     <string name="v1_ambient">Voltage 1</string>

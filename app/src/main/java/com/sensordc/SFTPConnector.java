@@ -1,5 +1,6 @@
 package com.sensordc;
 
+import android.util.Log;
 import com.jcraft.jsch.*;
 
 import java.io.File;
@@ -29,19 +30,8 @@ class SFTPConnector {
         try {
             this.ssh.addIdentity(remoteUser, privateKey, publicKey, null);
         } catch (JSchException e) {
-            SensorDCLog.e(TAG, e.getMessage());
+            SensorDCLog.e(TAG, Log.getStackTraceString(e));
         }
-    }
-
-    private void connect() throws SftpException, JSchException {
-        if (this.session == null) {
-            this.session = this.ssh.getSession(this.remoteUser, this.remoteHost, this.remotePort);
-        }
-        this.session.connect();
-
-        // Create new channel, in case existing session was disconnected
-        this.channel = (ChannelSftp) this.session.openChannel("sftp");
-        this.channel.connect();
     }
 
     void upload(String remoteDirectoryPath, List<File> filesToUpload) {
@@ -67,22 +57,31 @@ class SFTPConnector {
                 }
             }
         } catch (SftpException | JSchException e) {
-            SensorDCLog.e(TAG, "sftp exception " + e + e.getMessage());
+            SensorDCLog.e(TAG, Log.getStackTraceString(e));
         } finally {
             disconnect();
         }
     }
 
-    private void rename(String sourcePath, String targetPath) throws SftpException {
-        this.channel.rename(sourcePath, targetPath);
+    private void connect() throws JSchException {
+        if (this.session == null) {
+            this.session = this.ssh.getSession(this.remoteUser, this.remoteHost, this.remotePort);
+        }
+        this.session.connect();
+
+        // Create new channel, in case existing session was disconnected
+        this.channel = (ChannelSftp) this.session.openChannel("sftp");
+        this.channel.connect();
     }
 
-    private void setPermissions(String temporaryFilePath) throws SftpException {
-        this.channel.chmod(OWNER_CAN_READ_AND_WRITE_PERMISSION, temporaryFilePath);
-    }
-
-    private void upload(File file, String temporaryFilePath) throws SftpException {
-        this.channel.put(file.getAbsolutePath(), temporaryFilePath);
+    private void tryMakeRemoteDirectory(String directoryName) {
+        // Checking if the directory exists introduces additional network traffic and
+        // the exception has to be handled anyway, so no checking if it already exists
+        try {
+            this.channel.mkdir(directoryName);
+        } catch (SftpException e) {
+            SensorDCLog.e(TAG, Log.getStackTraceString(e));
+        }
     }
 
     private List<DataFileInfo> getRemoteFilesInfo(String remoteDirectoryPath) throws SftpException {
@@ -96,22 +95,24 @@ class SFTPConnector {
         return remoteFiles;
     }
 
+    private void upload(File file, String temporaryFilePath) throws SftpException {
+        this.channel.put(file.getAbsolutePath(), temporaryFilePath);
+    }
+
+    private void setPermissions(String temporaryFilePath) throws SftpException {
+        this.channel.chmod(OWNER_CAN_READ_AND_WRITE_PERMISSION, temporaryFilePath);
+    }
+
+    private void rename(String sourcePath, String targetPath) throws SftpException {
+        this.channel.rename(sourcePath, targetPath);
+    }
+
     private void disconnect() {
         if (this.channel != null) {
             this.channel.disconnect();
         }
         if (this.session != null) {
             this.session.disconnect();
-        }
-    }
-
-    private void tryMakeRemoteDirectory(String directoryName) {
-        // Checking if the directory exists introduces additional network traffic and
-        // the exception has to be handled anyway, so no checking if it already exists
-        try {
-            this.channel.mkdir(directoryName);
-        } catch (SftpException e) {
-            SensorDCLog.e(TAG, "tryMakeRemoteDirectory " + e);
         }
     }
 }

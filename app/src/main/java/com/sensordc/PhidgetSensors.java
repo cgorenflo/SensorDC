@@ -2,24 +2,26 @@ package com.sensordc;
 
 import android.util.Log;
 import com.phidgets.InterfaceKitPhidget;
+import com.phidgets.PhidgetException;
 import com.phidgets.event.*;
+
+import java.util.Locale;
 
 class PhidgetSensors {
 
     private static final String TAG = PhidgetSensors.class.getSimpleName();
     private final PhidgetManager manager;
     private final CustomPhidgetValue[] allPhidgetSensors;
-    private final Object attachLock = new Object();
     private final Object sensorChangeLock = new Object();
-    private CustomPhidgetValue batteryTemperature;
-    private CustomPhidgetValue ambientTemperature;
-    private CustomPhidgetValue voltage;
-    private CustomPhidgetValue dischargeCurrent;
+    private final CustomPhidgetValue batteryTemperature;
+    private final CustomPhidgetValue ambientTemperature;
+    private final CustomPhidgetValue voltage;
+    private final CustomPhidgetValue dischargeCurrent;
+    private final CustomPhidgetValue current;
     private InterfaceKitPhidget phidget;
     private AttachListener phidgetAttachListener;
     private DetachListener phidgetDetachListener;
     private SensorChangeListener phidgetChangeListener;
-    private CustomPhidgetValue current;
 
     PhidgetSensors(PhidgetManager manager) {
         this.manager = manager;
@@ -31,21 +33,6 @@ class PhidgetSensors {
 
         this.allPhidgetSensors = new CustomPhidgetValue[]{this.current, this.dischargeCurrent, this.voltage,
                                                           this.ambientTemperature, this.batteryTemperature};
-    }
-
-    void stop() {
-        try {
-
-            this.phidget.removeAttachListener(this.phidgetAttachListener);
-            this.phidget.removeDetachListener(this.phidgetDetachListener);
-            this.phidget.removeSensorChangeListener(this.phidgetChangeListener);
-
-            this.phidget.close();
-            com.phidgets.usb.Manager.Uninitialize();
-
-        } catch (Exception e) {
-            SensorDCLog.e(TAG, Log.getStackTraceString(e));
-        }
     }
 
     void initialize() {
@@ -63,17 +50,27 @@ class PhidgetSensors {
 
         } catch (Exception e) {
             SensorDCLog.e(TAG, Log.getStackTraceString(e));
+            stop();
         }
     }
 
     private void initializeListeners() {
         this.phidgetAttachListener = new AttachListener() {
             public void attached(final AttachEvent event) {
-                PhidgetAttachEventHandler handler = new PhidgetAttachEventHandler(event.getSource());
-
-                synchronized (PhidgetSensors.this.attachLock) {
-                    handler.run();
+                try {
+                    setSensorSensitivityToMax((InterfaceKitPhidget) event.getSource());
+                    SensorDCLog.i(TAG, String.format(Locale.CANADA, "%s attached", event.getSource().getDeviceName()));
+                } catch (PhidgetException e) {
+                    SensorDCLog.e("phidget attach event handler ", "" + e);
                 }
+            }
+
+            private void setSensorSensitivityToMax(InterfaceKitPhidget phidget) throws PhidgetException {
+                phidget.setSensorChangeTrigger(0, 1);
+                phidget.setSensorChangeTrigger(1, 1);
+                phidget.setSensorChangeTrigger(2, 1);
+                phidget.setSensorChangeTrigger(3, 1);
+                phidget.setSensorChangeTrigger(4, 1);
             }
         };
 
@@ -91,39 +88,49 @@ class PhidgetSensors {
 
         this.phidgetChangeListener = new SensorChangeListener() {
             public void sensorChanged(SensorChangeEvent event) {
-                synchronized (PhidgetSensors.this.sensorChangeLock) {
+                PhidgetSensors phidgetSensors = PhidgetSensors.this;
+                synchronized (phidgetSensors.sensorChangeLock) {
                     int index = event.getIndex();
                     int value = event.getValue();
-                    Settings settings = PhidgetSensors.this.manager.getSettings();
 
                     //Reassign to shorter reference to make the following code more readable
-                    CustomPhidgetValue current = PhidgetSensors.this.current;
-                    CustomPhidgetValue voltage = PhidgetSensors.this.voltage;
-                    CustomPhidgetValue ambientTemperature = PhidgetSensors.this.ambientTemperature;
-                    CustomPhidgetValue batteryTemperature = PhidgetSensors.this.batteryTemperature;
-                    CustomPhidgetValue dischargeCurrent = PhidgetSensors.this.dischargeCurrent;
+                    CustomPhidgetValue current = phidgetSensors.current;
+                    CustomPhidgetValue voltage = phidgetSensors.voltage;
+                    CustomPhidgetValue ambientTemperature = phidgetSensors.ambientTemperature;
+                    CustomPhidgetValue batteryTemperature = phidgetSensors.batteryTemperature;
+                    CustomPhidgetValue dischargeCurrent = phidgetSensors.dischargeCurrent;
 
+                    Calibration ambientCal = phidgetSensors.manager.getSettings().getAmbientCalibration();
+                    Calibration batteryCal = phidgetSensors.manager.getSettings().getBatteryCalibration();
 
-                    if (index == 0)
-                        current.setValue(value);
-                    if (index == 1)
-                        voltage.setValue(calculateVoltage(value));
-                    if (index == 2) {
-                        ambientTemperature.setValue(interpolateTemperature(value, settings.getT1ambient().getValue(),
-                                settings.getT2ambient().getValue(), settings.getV1ambient().getValue(),
-                                settings.getV2ambient().getValue()));
-                    }
-                    if (index == 3) {
-                        batteryTemperature.setValue(interpolateTemperature(value, settings.getT1battery().getValue(),
-                                settings.getT2battery().getValue(), settings.getV1battery().getValue(),
-                                settings.getV2battery().getValue()));
-                    }
-                    if (index == 4) {
-                        dischargeCurrent.setValue(value);
+                    switch (index) {
+                        case 0:
+                            current.setValue(value);
+                            break;
+                        case 1:
+                            voltage.setValue(calculateVoltage(value));
+                            break;
+                        case 2:
+                            ambientTemperature.setValue(
+                                    interpolateTemperature(value, ambientCal.T1, ambientCal.T2, ambientCal.V1,
+                                            ambientCal.V2));
+                            break;
+                        case 3:
+                            batteryTemperature.setValue(
+                                    interpolateTemperature(value, batteryCal.T1, batteryCal.T2, batteryCal.V1,
+                                            batteryCal.V2));
+                            break;
+                        case 4:
+                            dischargeCurrent.setValue(value);
+                            break;
+                        default:
+                            SensorDCLog.e(TAG, "Phidget sensor index out of bounds");
+                            break;
                     }
                 }
             }
 
+            //this transformation is given in the specs sheet of the voltage sensor
             private float calculateVoltage(int value) {
                 return ((value / 200f) - 2.5f) / 0.0681f;
             }
@@ -132,11 +139,25 @@ class PhidgetSensors {
             private float interpolateTemperature(int value, float t1Calibration, float t2Calibration,
                                                  float v1Calibration, float v2Calibration) {
                 float a = (t1Calibration - t2Calibration) / (v1Calibration - v2Calibration);
-                float b = (t2Calibration * v1Calibration - t1Calibration * v2Calibration) / (v1Calibration -
-                        v2Calibration);
+                float b = (t2Calibration * v1Calibration - t1Calibration * v2Calibration) /
+                          (v1Calibration - v2Calibration);
                 return a * value + b;
             }
         };
+    }
+
+    void stop() {
+        try {
+            this.phidget.removeAttachListener(this.phidgetAttachListener);
+            this.phidget.removeDetachListener(this.phidgetDetachListener);
+            this.phidget.removeSensorChangeListener(this.phidgetChangeListener);
+
+            this.phidget.close();
+        } catch (PhidgetException e) {
+            SensorDCLog.e(TAG, Log.getStackTraceString(e));
+        } finally {
+            com.phidgets.usb.Manager.Uninitialize();
+        }
     }
 
     boolean areAllUpdated() {

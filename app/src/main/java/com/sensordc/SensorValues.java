@@ -1,8 +1,8 @@
 package com.sensordc;
 
 class SensorValues {
-    private long time;
-    private float[] values;
+    private final long time;
+    private final float[] values;
 
     SensorValues(long time, float[] values) {
         this.time = time;

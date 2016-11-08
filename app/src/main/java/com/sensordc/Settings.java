@@ -9,19 +9,25 @@ import java.util.Locale;
 
 public class Settings {
     private final SharedPreferences storedSettings;
-    private Setting t1ambient = new Setting("t1ambient", 25.0f);
-    private Setting t2ambient = new Setting("t2ambient", 45.0f);
-    private Setting v1ambient = new Setting("v1ambient", 596.0f);
-    private Setting v2ambient = new Setting("v2ambient", 636.0f);
-    private Setting t1battery = new Setting("t1battery", 25.0f);
-    private Setting t2battery = new Setting("t2battery", 45.0f);
-    private Setting v1battery = new Setting("v1battery", 596.0f);
-    private Setting v2battery = new Setting("v2battery", 636.0f);
-    private ArrayList<Setting> allSettings = populateAllSettings();
+    private final Setting t1ambient = new Setting("t1ambient", 25.0f);
+    private final Setting t2ambient = new Setting("t2ambient", 45.0f);
+    private final Setting v1ambient = new Setting("v1ambient", 596.0f);
+    private final Setting v2ambient = new Setting("v2ambient", 636.0f);
+    private final Setting t1battery = new Setting("t1battery", 25.0f);
+    private final Setting t2battery = new Setting("t2battery", 45.0f);
+    private final Setting v1battery = new Setting("v1battery", 596.0f);
+    private final Setting v2battery = new Setting("v2battery", 636.0f);
+    private final ArrayList<Setting> allSettings = populateAllSettings();
 
     Settings(SharedPreferences storedSettings) {
         this.storedSettings = storedSettings;
         load();
+    }
+
+    private void load() {
+        for (Setting setting : this.allSettings) {
+            setting.load(this.storedSettings);
+        }
     }
 
     // Needed for data binding to view
@@ -72,6 +78,16 @@ public class Settings {
         return this.v2battery;
     }
 
+    Calibration getAmbientCalibration() {
+        return new Calibration(this.t1ambient.getValue(), this.t2ambient.getValue(), this.v1ambient.getValue(),
+                this.v2ambient.getValue());
+    }
+
+    Calibration getBatteryCalibration() {
+        return new Calibration(this.t1battery.getValue(), this.t2battery.getValue(), this.v1battery.getValue(),
+                this.v2battery.getValue());
+    }
+
     private ArrayList<Setting> populateAllSettings() {
         ArrayList<Setting> allSets = new ArrayList<>();
 
@@ -86,12 +102,6 @@ public class Settings {
         allSets.add(this.v2battery);
 
         return allSets;
-    }
-
-    private void load() {
-        for (Setting setting : this.allSettings) {
-            setting.load(this.storedSettings);
-        }
     }
 
     void save() {
@@ -114,6 +124,18 @@ public class Settings {
             this.defaultValue = defaultValue;
         }
 
+        @Bindable
+        // Needed for data binding to view
+        public String getValueString() {
+            return String.format(Locale.getDefault(), "%.2f", this.value);
+        }
+
+        @Bindable
+        // Needed for data binding to view
+        public void setValueString(String value) {
+            this.value = Float.valueOf(value);
+        }
+
         private void load(SharedPreferences storedSettings) {
             this.setValue(storedSettings.getFloat(this.settingName, this.defaultValue));
         }
@@ -128,18 +150,6 @@ public class Settings {
 
         private void setValue(float value) {
             this.value = value;
-        }
-
-        @Bindable
-        // Needed for data binding to view
-        public String getValueString() {
-            return String.format(Locale.getDefault(), "%.2f", this.value);
-        }
-
-        @Bindable
-        // Needed for data binding to view
-        public void setValueString(String value) {
-            this.value = Float.valueOf(value);
         }
     }
 }

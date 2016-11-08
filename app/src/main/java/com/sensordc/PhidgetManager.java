@@ -3,8 +3,8 @@ package com.sensordc;
 import android.content.Context;
 
 class PhidgetManager {
-    private Context context;
-    private Settings settings;
+    private final Context context;
+    private final Settings settings;
 
     PhidgetManager(Context context, Settings settings) {
         this.context = context;
