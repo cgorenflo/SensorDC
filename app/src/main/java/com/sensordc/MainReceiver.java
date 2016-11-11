@@ -3,7 +3,6 @@ package com.sensordc;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
-import android.util.Log;
 
 public class MainReceiver extends WakefulBroadcastReceiver {
 
@@ -11,11 +10,7 @@ public class MainReceiver extends WakefulBroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        try {
-            SensorDCLog.i(TAG, "Starting SensorDC service");
-            startWakefulService(context, new Intent(context, SensorDCService.class));
-        } catch (Exception e) {
-            SensorDCLog.e(TAG, Log.getStackTraceString(e));
-        }
+        SensorDCLog.i(TAG, "Starting main service");
+        startWakefulService(context, new Intent(context, MainService.class));
     }
 }

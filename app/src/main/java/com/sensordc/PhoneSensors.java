@@ -5,6 +5,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Criteria;
 import android.location.LocationManager;
+import com.sensordc.BatteryManager.BatteryStatus;
 
 import java.util.Locale;
 
@@ -12,12 +13,12 @@ class PhoneSensors {
     private static final String TAG = PhoneSensors.class.getSimpleName();
     private final SensorManager sensorManager;
     private final LocationManager locationManager;
-    private final CustomBatteryManager batteryManager;
-    private CustomSensorEventListener linearAccelerationListener;
-    private CustomSensorEventListener rotationVectorListener;
-    private CustomLocationListener locationListener;
+    private final BatteryManager batteryManager;
+    private PhoneSensorListener linearAccelerationListener;
+    private PhoneSensorListener rotationVectorListener;
+    private PhoneLocationListener locationListener;
 
-    PhoneSensors(SensorManager sensorManager, LocationManager locationManager, CustomBatteryManager batteryManager) {
+    PhoneSensors(SensorManager sensorManager, LocationManager locationManager, BatteryManager batteryManager) {
 
         this.sensorManager = sensorManager;
         this.locationManager = locationManager;
@@ -25,12 +26,12 @@ class PhoneSensors {
     }
 
     void initialize(long minTimeBetweenGPSUpdates, float minDistanceBetweenGPSUpdates) {
+        SensorDCLog.d(TAG, "Initializing phone sensors.");
         Sensor linearAcceleration = this.sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         Sensor rotationVector = this.sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 
-        this.linearAccelerationListener = new CustomSensorEventListener();
-        this.rotationVectorListener = new CustomSensorEventListener();
-        this.locationListener = new CustomLocationListener();
+        this.linearAccelerationListener = new PhoneSensorListener(Sensor.TYPE_LINEAR_ACCELERATION);
+        this.rotationVectorListener = new PhoneSensorListener(Sensor.TYPE_ROTATION_VECTOR);
 
         registerSensorListener(linearAcceleration, this.linearAccelerationListener, Sensor.TYPE_LINEAR_ACCELERATION);
         registerSensorListener(rotationVector, this.rotationVectorListener, Sensor.TYPE_ROTATION_VECTOR);
@@ -53,9 +54,8 @@ class PhoneSensors {
         String bestProvider = this.locationManager.getBestProvider(criteria, true);
 
         if (bestProvider != null) {
-
-            this.locationManager.requestLocationUpdates(bestProvider, minTimeBetweenGPSUpdates,
-                    minDistanceBetweenGPSUpdates, this.locationListener);
+            this.locationListener = new PhoneLocationListener(this.locationManager, bestProvider,
+                    minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates);
         } else {
             SensorDCLog.e(TAG, "No location provider found");
         }
@@ -65,12 +65,6 @@ class PhoneSensors {
         this.sensorManager.unregisterListener(this.linearAccelerationListener);
         this.sensorManager.unregisterListener(this.rotationVectorListener);
         this.locationManager.removeUpdates(this.locationListener);
-    }
-
-    boolean areAllUpdated() {
-        return this.linearAccelerationListener.hasBeenUpdatedSinceLastRetrieval() &&
-               this.rotationVectorListener.hasBeenUpdatedSinceLastRetrieval() &&
-               this.locationListener.hasBeenUpdatedSinceLastRetrieval();
     }
 
     float[] getLinearAcceleration() {

@@ -15,6 +15,7 @@ public class MainActivity extends Activity {
     private Settings settings;
 
     public void clickSave(View saveButton) {
+        SensorDCLog.i(TAG, "Save calibration settings.");
         this.settings.save();
         showToastNotification();
     }
@@ -27,11 +28,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        try {
             sendBroadcast(new Intent(this, MainReceiver.class));
+        try {
             bindSettingsToViews();
         } catch (Exception e) {
-            SensorDCLog.e(TAG, Log.getStackTraceString(e));
+            SensorDCLog.e(TAG, "Could not show calibration settings.", e);
         }
     }
 

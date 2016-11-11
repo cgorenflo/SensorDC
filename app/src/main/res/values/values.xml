@@ -8,7 +8,7 @@
     <integer name="sensorRecordingDelayInMS">1000</integer>
 
     <integer name="minTimeBetweenGPSUpdatesInMS">500</integer>
-    <integer name="minDistanceBetweenGPSUpdates">10</integer>
+    <integer name="minDistanceBetweenGPSUpdates">0</integer>
 
     <integer name="dataUploadIntervalInMS">600000</integer>
     <integer name="rebootAtMinuteOfHour">20</integer>

@@ -3,9 +3,8 @@ package com.sensordc;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
@@ -13,31 +12,40 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.Calendar;
 
-public class SensorDCService extends IntentService {
+public class MainService extends IntentService {
 
-    private static final String TAG = SensorDCService.class.getSimpleName();
+    private static final String TAG = MainService.class.getSimpleName();
+    private final Handler uiHandler = new Handler();
 
-    public SensorDCService() {
+    public MainService() {
         super(TAG);
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Toast.makeText(this, "SensorDC service started", Toast.LENGTH_LONG).show();
         try {
+            createToast("Start broadcast registrations.");
             SetAutoBootAndDisableBootAudio();
             SetAlarms();
-            Toast.makeText(this, "SensorDC service stopped", Toast.LENGTH_LONG).show();
+            createToast("Registrations successful");
         } catch (Exception e) {
-            SensorDCLog.e(TAG, Log.getStackTraceString(e));
-            Toast.makeText(this, "SensorDC service failed", Toast.LENGTH_LONG).show();
+            createToast("Registrations failed");
+            SensorDCLog.e(TAG, "Broadcast alarm setup failed.", e);
         } finally {
             MainReceiver.completeWakefulIntent(intent);
         }
     }
 
+    private void createToast(final String message) {
+        this.uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainService.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     private void SetAutoBootAndDisableBootAudio() throws IOException, InterruptedException {
-        Log.d(TAG, "SetAutoBoot ");
+        Log.d(TAG, "SetAutoBoot");
 
         final String command1 = "mount -o remount,rw /system";
         Process proc = Runtime.getRuntime().exec(new String[]{"su", "-c", command1});
@@ -89,7 +97,6 @@ public class SensorDCService extends IntentService {
         proc = Runtime.getRuntime().exec(new String[]{"su", "-c", command11});
         proc.waitFor();
 
-
         // Disabling boot up sound
         final String command12 =
                 "mv /system/media/audio/ui/PowerOn.ogg /system/media/audio/ui/PowerOn.ogg" + "" + ".disabled";
@@ -100,21 +107,16 @@ public class SensorDCService extends IntentService {
     private void SetAlarms() {
         AlarmManager alarmManager = (AlarmManager) this.getSystemService(ALARM_SERVICE);
 
-        SensorDCLog.i(TAG, "Setting reboot alarm");
         SetRebootAlarm(alarmManager);
-
-        SensorDCLog.i(TAG, "Setting data collection alarm");
-        setRepeatingAlarm(alarmManager, DataCollectionAlarmReceiver.class,
-                getResources().getInteger(R.integer.dataCollectionIntervalInMS), 101);
-
-        SensorDCLog.i(TAG, "Setting data upload alarm");
-        setRepeatingAlarm(alarmManager, DataUploadAlarmReceiver.class,
-                getResources().getInteger(R.integer.dataUploadIntervalInMS), 102);
+        setDataCollectionAlarm(alarmManager);
+        setDataUploadAlarm(alarmManager);
 
         SensorDCLog.i(TAG, "All alarms set");
     }
 
     private void SetRebootAlarm(AlarmManager alarmManager) {
+        SensorDCLog.i(TAG, "Setting reboot alarm");
+
         Intent rebootIntent = new Intent(this, HandleRebootReceiver.class);
         PendingIntent pendingRebootIntent = PendingIntent.getBroadcast(this, 103, rebootIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
@@ -126,6 +128,18 @@ public class SensorDCService extends IntentService {
         calendar.set(Calendar.MINUTE, getResources().getInteger(R.integer.rebootAtMinuteOfHour));
 
         alarmManager.set(AlarmManager.RTC, calendar.getTimeInMillis(), pendingRebootIntent);
+    }
+
+    private void setDataCollectionAlarm(AlarmManager alarmManager) {
+        SensorDCLog.i(TAG, "Setting data collection alarm");
+        setRepeatingAlarm(alarmManager, DataCollectionAlarmReceiver.class,
+                getResources().getInteger(R.integer.dataCollectionIntervalInMS), 101);
+    }
+
+    private void setDataUploadAlarm(AlarmManager alarmManager) {
+        SensorDCLog.i(TAG, "Setting data upload alarm");
+        setRepeatingAlarm(alarmManager, DataUploadAlarmReceiver.class,
+                getResources().getInteger(R.integer.dataUploadIntervalInMS), 102);
     }
 
     private void setRepeatingAlarm(AlarmManager alarmManager, Class<?> receivingBroadcast, int alarmInterval,

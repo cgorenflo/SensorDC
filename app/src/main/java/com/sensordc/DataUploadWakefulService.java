@@ -3,6 +3,7 @@ package com.sensordc;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -18,6 +19,7 @@ import java.util.Locale;
 public class DataUploadWakefulService extends IntentService {
 
     private static final String TAG = DataUploadWakefulService.class.getSimpleName();
+    private final Handler uiHandler = new Handler();
 
     public DataUploadWakefulService() {
         super(TAG);
@@ -26,46 +28,50 @@ public class DataUploadWakefulService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         try {
-            Resources resources = this.getResources();
-
-            String remoteHost = resources.getString(R.string.remoteHost);
-            String remoteUser = resources.getString(R.string.remoteUser);
-            int remotePort = resources.getInteger(R.integer.remotePort);
-
-            byte[] publicKey = ReadFromInputStream(resources.openRawResource(R.raw.publickey));
-            byte[] privateKey = ReadFromInputStream(resources.openRawResource(R.raw.privatekey));
-
-            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-            //the logs are stored remotely in directories that are named like the correspondent device ID
-            String remoteDirectory = telephonyManager.getDeviceId();
-            String localDirectory = SensorDCLog.DataLogDirectory;
-
-            SensorDCLog.i(TAG, String.format(Locale.CANADA,
-                    "Upload starting with %s@%s:%s from local directory %s to remote directory %s", remoteUser,
-                    remoteHost, remotePort, localDirectory, remoteDirectory));
-            Toast.makeText(this, "trying upload", Toast.LENGTH_LONG).show();
-            SFTPConnector connector = new SFTPConnector(remoteHost, remotePort, remoteUser, privateKey, publicKey);
-
-            if (PerformUpload(connector, localDirectory, remoteDirectory)) {
-
-                Log.i(TAG, "upload completed to " + remoteHost + "," + remotePort + "," + remoteUser + "," +
-                           remoteDirectory + "," + localDirectory);
-                Toast.makeText(this, "upload done", Toast.LENGTH_LONG).show();
-
-            } else {
-
-                Log.i(TAG,
-                        "upload failed to " + remoteHost + "," + remotePort + "," + remoteUser + "," + remoteDirectory +
-                        "," + localDirectory);
-                Toast.makeText(this, "upload failed", Toast.LENGTH_LONG).show();
-
-            }
+            createToast("Starting data upload");
+            handleUpload();
+            createToast("Data upload successful");
+        } catch (Exception e) {
+            createToast("Data upload failed");
+            SensorDCLog.e(TAG, "Data upload failed.", e);
         } finally {
             DataUploadAlarmReceiver.completeWakefulIntent(intent);
         }
     }
 
-    private byte[] ReadFromInputStream(InputStream inputStream) {
+    private void createToast(final String message) {
+        this.uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(DataUploadWakefulService.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void handleUpload() {
+        SensorDCLog.i(TAG, "Reading ssh connection settings.");
+
+        Resources resources = this.getResources();
+
+        String remoteHost = resources.getString(R.string.remoteHost);
+        String remoteUser = resources.getString(R.string.remoteUser);
+        int remotePort = resources.getInteger(R.integer.remotePort);
+
+        byte[] publicKey = ReadKey(resources.openRawResource(R.raw.publickey));
+        byte[] privateKey = ReadKey(resources.openRawResource(R.raw.privatekey));
+
+        String remoteDirectory = getRemoteDirectoryName();
+        String localDirectory = SensorDCLog.getDataLogDirectory();
+
+        SensorDCLog.i(TAG, String.format(Locale.CANADA,
+                "Upload starting with %s@%s:%s from local directory %s to remote directory %s", remoteUser, remoteHost,
+                remotePort, localDirectory, remoteDirectory));
+        SFTPConnector connector = new SFTPConnector(remoteHost, remotePort, remoteUser, privateKey, publicKey);
+
+        upload(connector, localDirectory, remoteDirectory);
+    }
+
+    private byte[] ReadKey(InputStream inputStream) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         int length;
@@ -74,26 +80,29 @@ public class DataUploadWakefulService extends IntentService {
                 stream.write(buffer, 0, length);
             }
         } catch (IOException e) {
-            SensorDCLog.e(TAG, Log.getStackTraceString(e));
+            SensorDCLog.e(TAG, "Could not read private or public key.", e);
             return null;
         }
 
         return stream.toByteArray();
     }
 
-    private boolean PerformUpload(SFTPConnector connector, String localDirectory, String remoteDirectory) {
+    private String getRemoteDirectoryName() {
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        //the logs are stored remotely in directories that are named like the correspondent device ID
+        return telephonyManager.getDeviceId();
+    }
+
+    private void upload(SFTPConnector connector, String localDirectory, String remoteDirectory) {
         try {
 
             List<File> filesToUpload = getFilesToUpload(localDirectory);
-
             connector.upload(remoteDirectory, filesToUpload);
-
+            Log.i(TAG, "Upload successful.");
 
         } catch (Exception e) {
-            SensorDCLog.e(TAG, "PerformUpload " + e + e.getMessage());
-            return false;
+            SensorDCLog.e(TAG, "Upload failed ", e);
         }
-        return true;
     }
 
     private List<File> getFilesToUpload(String localDirectory) {

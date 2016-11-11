@@ -1,8 +1,10 @@
 package com.sensordc;
 
 import android.telephony.TelephonyManager;
+import com.sensordc.BatteryManager.BatteryStatus;
 
 class SensorDataCollector {
+    private static final String TAG = SensorDataCollector.class.getSimpleName();
     private final PhoneSensors phoneSensors;
     private final PhidgetSensors phidgetSensors;
     private final TelephonyManager telephonyManager;
@@ -18,6 +20,7 @@ class SensorDataCollector {
     }
 
     void initializeSensors(long minTimeBetweenGPSUpdates, float minDistanceBetweenGPSUpdates) {
+        SensorDCLog.i(TAG, "Initializing sensor listeners.");
         this.phoneSensors.initialize(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates);
         this.phidgetSensors.initialize();
 
@@ -25,51 +28,49 @@ class SensorDataCollector {
     }
 
     void stop() {
+        SensorDCLog.i(TAG, "Unregistering sensor listeners.");
         this.phoneSensors.stop();
         this.phidgetSensors.stop();
     }
 
-    Boolean areAllUpdated() {
-        return this.phoneSensors.areAllUpdated() && this.phidgetSensors.areAllUpdated();
-    }
-
     SensorData getCurrentSensorData() {
+        SensorDCLog.i(TAG, "Retrieving sensor data.");
         if (!this.isInitialized) {
             return null;
         }
 
         int versionCode = BuildConfig.VERSION_CODE;
         SensorData sensorData = new SensorData();
-        sensorData.setVersionCode(versionCode);
-        sensorData.setIMEI(getIMEI());
+        sensorData.versionCode = versionCode;
+        sensorData.deviceID = getIMEI();
 
         float[] accelerationValues = this.phoneSensors.getLinearAcceleration();
-        sensorData.setLinearAccelerationX(accelerationValues[0]);
-        sensorData.setLinearAccelerationY(accelerationValues[1]);
-        sensorData.setLinearAccelerationZ(accelerationValues[2]);
+        sensorData.linearAccelerationX = accelerationValues[0];
+        sensorData.linearAccelerationY = accelerationValues[1];
+        sensorData.linearAccelerationZ = accelerationValues[2];
 
         float[] rotationValues = this.phoneSensors.getRotationVector();
-        sensorData.setRotationX(rotationValues[0]);
-        sensorData.setRotationY(rotationValues[1]);
-        sensorData.setRotationZ(rotationValues[2]);
-        sensorData.setRotationScalar(rotationValues[3]);
+        sensorData.rotationX = rotationValues[0];
+        sensorData.rotationY = rotationValues[1];
+        sensorData.rotationZ = rotationValues[2];
+        sensorData.rotationScalar = rotationValues[3];
 
         float[] locationValues = this.phoneSensors.getLocation();
-        sensorData.setGPSLatitude(locationValues[0]);
-        sensorData.setGPSLongitude(locationValues[1]);
-        sensorData.setGPSAccuracy(locationValues[2]);
+        sensorData.gpsLatitude = locationValues[0];
+        sensorData.gpsLongitude = locationValues[1];
+        sensorData.gpsAccuracy = locationValues[2];
 
         BatteryStatus batteryStatus = this.phoneSensors.getBatteryStatus();
-        sensorData.setBatteryPercentage(batteryStatus.getBatteryPercentage());
-        sensorData.setIsUSBCharge(batteryStatus.getIsUSBCharge());
-        sensorData.setIsACCharge(batteryStatus.getIsACCharge());
-        sensorData.setIsChargingOrFull(batteryStatus.getIsChargingOrFull());
+        sensorData.batteryPercentage = batteryStatus.getBatteryPercentage();
+        sensorData.isUSBCharge = batteryStatus.getIsUSBCharge();
+        sensorData.isACCharge = batteryStatus.getIsACCharge();
+        sensorData.isChargingOrFull = batteryStatus.getIsChargingOrFull();
 
-        sensorData.setBatteryTemperature(this.phidgetSensors.getBatteryTemperature());
-        sensorData.setAmbientTemperature(this.phidgetSensors.getAmbientTemperature());
-        sensorData.setVoltage(this.phidgetSensors.getVoltage());
-        sensorData.setCurrent(this.phidgetSensors.getCurrent());
-        sensorData.setDischargeCurrent(this.phidgetSensors.getDischargeCurrent());
+        sensorData.batteryTemperature = this.phidgetSensors.getBatteryTemperature();
+        sensorData.ambientTemperature = this.phidgetSensors.getAmbientTemperature();
+        sensorData.voltage = this.phidgetSensors.getVoltage();
+        sensorData.current = this.phidgetSensors.getCurrent();
+        sensorData.dischargeCurrent = this.phidgetSensors.getDischargeCurrent();
 
         return sensorData;
     }

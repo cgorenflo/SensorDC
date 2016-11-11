@@ -16,12 +16,13 @@ public class HandleRebootReceiver extends WakefulBroadcastReceiver {
         try {
             HandleReboot();
         } catch (Exception e) {
-            SensorDCLog.e(TAG, Log.getStackTraceString(e));
+            SensorDCLog.e(TAG, "Reboot failed.", e);
         }
     }
 
     private void HandleReboot() throws IOException, InterruptedException {
-        SensorDCLog.DumpDataLogsToDisk();
+        SensorDCLog.i(TAG, "Rebooting.");
+        SensorDCLog.flush();
 
         Process process = Runtime.getRuntime().exec(new String[]{"su", "-c", "reboot"});
         process.waitFor();

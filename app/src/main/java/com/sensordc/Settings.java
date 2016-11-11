@@ -133,7 +133,11 @@ public class Settings {
         @Bindable
         // Needed for data binding to view
         public void setValueString(String value) {
-            this.value = Float.valueOf(value);
+            if (value == null || value.isEmpty()) {
+                this.value = 0f;
+            } else {
+                this.value = Float.valueOf(value);
+            }
         }
 
         private void load(SharedPreferences storedSettings) {

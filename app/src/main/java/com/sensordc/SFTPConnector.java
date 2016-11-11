@@ -57,7 +57,7 @@ class SFTPConnector {
                 }
             }
         } catch (SftpException | JSchException e) {
-            SensorDCLog.e(TAG, Log.getStackTraceString(e));
+            SensorDCLog.e(TAG, "Data upload failed.", e);
         } finally {
             disconnect();
         }
@@ -80,7 +80,7 @@ class SFTPConnector {
         try {
             this.channel.mkdir(directoryName);
         } catch (SftpException e) {
-            SensorDCLog.e(TAG, Log.getStackTraceString(e));
+            SensorDCLog.w(TAG, "Creating remote directory failed. Disregard if already exists.", e);
         }
     }
 

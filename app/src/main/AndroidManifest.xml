@@ -7,6 +7,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <uses-feature android:name="android.hardware.usb.host"/>
 
@@ -21,17 +24,23 @@
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/usb_device_filter"/>
         </activity>
 
-        <service android:name=".SensorDCService"/>
+        <service android:name=".MainService"/>
         <service android:name=".DataUploadWakefulService"/>
         <service android:name=".DataCollectionWakefulService"/>
 
         <receiver android:name=".DataUploadAlarmReceiver"/>
         <receiver android:name=".DataCollectionAlarmReceiver"/>
-        <receiver android:name=".PackageReplacedReceiver"/>
+        <receiver android:name=".HandleRebootReceiver"/>
+
         <receiver
             android:name=".MainReceiver"
             android:enabled="true"
@@ -39,6 +48,11 @@
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <data android:scheme="package"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </receiver>
