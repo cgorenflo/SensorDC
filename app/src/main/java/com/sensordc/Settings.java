@@ -78,6 +78,12 @@ public class Settings {
         return this.v2battery;
     }
 
+    // Needed for data binding to view
+    @SuppressWarnings("WeakerAccess")
+    public String getBuildVersion() {
+        return "Version " + BuildConfig.VERSION_CODE;
+    }
+
     Calibration getAmbientCalibration() {
         return new Calibration(this.t1ambient.getValue(), this.t2ambient.getValue(), this.v1ambient.getValue(),
                 this.v2ambient.getValue());

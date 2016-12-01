@@ -39,7 +39,6 @@
 
         <receiver android:name=".DataUploadAlarmReceiver"/>
         <receiver android:name=".DataCollectionAlarmReceiver"/>
-        <receiver android:name=".HandleRebootReceiver"/>
 
         <receiver
             android:name=".MainReceiver"

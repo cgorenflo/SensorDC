@@ -11,5 +11,4 @@
     <integer name="minDistanceBetweenGPSUpdates">0</integer>
 
     <integer name="dataUploadIntervalInMS">600000</integer>
-    <integer name="rebootAtMinuteOfHour">20</integer>
 </resources>

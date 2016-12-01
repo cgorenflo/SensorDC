@@ -22,17 +22,13 @@ public class SensorDCLog {
     private static String DataLogDirectory =
             Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "sensordc" + File.separator +
             "data";
+    private static OutputFormatter formatter = new CSVFormatter();
 
     static void w(String tag, String message, Throwable e) {
         Log.w(tag, message, e);
     }
 
-    static void w(String tag, String message) {
-        Log.w(tag, message);
-    }
-
     static void log(SensorData data) {
-        CSVFormatter formatter = new CSVFormatter();
         String output = formatter.format(getCurrentTimeStamp("yyyy-MM-dd HH:mm:ss.SSS"), data);
         synchronized (dataLogs) {
             i(TAG, "Logging sensor readings.");
@@ -66,7 +62,7 @@ public class SensorDCLog {
     private static void WriteToFile(List<String> logEntries, File logFile) {
         BufferedWriter writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter(logFile));
+            writer = new BufferedWriter(new FileWriter(logFile, true));
             for (String logEntry : logEntries) {
                 writer.append(logEntry);
                 writer.newLine();
@@ -111,7 +107,7 @@ public class SensorDCLog {
     }
 
     static String getCurrentFileName() {
-        return "datav2." + getCurrentTimeStamp("yyyy-MM-dd-HH") + ".log";
+        return "data" + formatter.getVersionLabel() + "." + getCurrentTimeStamp("yyyy-MM-dd-HH") + ".log";
     }
 
     public static void e(String tag, String message, Throwable e) {
@@ -119,7 +115,6 @@ public class SensorDCLog {
     }
 
     private static void WriteHeader(File logFile) {
-        OutputFormatter formatter = getFormatter();
         ArrayList<String> header = new ArrayList<>();
         header.add(formatter.createHeader());
         WriteToFile(header, logFile);
@@ -127,10 +122,6 @@ public class SensorDCLog {
 
     static String getDataLogDirectory() {
         return DataLogDirectory;
-    }
-
-    private static OutputFormatter getFormatter() {
-        return new CSVFormatter();
     }
 
     static String getCurrentFileName_GPSLogger() {

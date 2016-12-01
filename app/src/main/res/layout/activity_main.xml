@@ -27,7 +27,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
             android:labelFor="@+id/ambient"
             android:text="@string/ambient"/>
 
@@ -167,6 +166,14 @@
                     android:text="@={settings.v2battery.valueString}"/>
             </RelativeLayout>
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/version_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@id/battery"
+            android:text="@{settings.buildVersion}"/>
 
         <Button
             android:id="@+id/savebutton"
