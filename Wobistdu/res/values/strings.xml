@@ -1,0 +1,19 @@
+<resources>
+
+    <string name="app_name">Wobistdu</string>
+    
+        <string name="WifiSSID">eduroam</string>
+        <string name="WifiIdentity"></string>
+        <string name="WifiPassword"></string>
+        <string name="APPLIST_LINK">http://blizzard.cs.uwaterloo.ca/~sensordc/repository/applist.txt</string>
+        <string name="AppUpdatePeriod">300000</string>
+        <!-- in milli-seconds -->
+        
+        <string name="DELAY_BETWEEN_SMS">60</string>
+        <!-- in seconds -->
+        
+        <string name="LIGHT_LEVEL_THRESHOLD">20.0</string>
+        <string name="LIGHT_SMS_RECEIVER">+12269890415</string>
+        
+
+</resources>
