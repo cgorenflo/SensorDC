@@ -17,10 +17,6 @@ class PhoneLocationListener implements LocationListener {
         this.lastRetrievedTimeStamp = TIMESTAMP_NOT_SET;
 
         registerListener(locationManager, bestProvider, minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates);
-        Location lastKnownLocation = locationManager.getLastKnownLocation(bestProvider);
-        if (lastKnownLocation != null) {
-            setLocation(lastKnownLocation);
-        }
     }
 
     private void registerListener(LocationManager locationManager, String bestProvider, long minTimeBetweenGPSUpdates,
@@ -54,13 +50,13 @@ class PhoneLocationListener implements LocationListener {
 
     }
 
-    SensorValues getCurrentValues() {
+    float[] getCurrentValues() {
         // Location might change in the meantime, so store reference locally
         SensorValues currentLocation = this.location;
 
         if (currentLocation == null) {
             SensorDCLog.e(TAG, "Could not retrieve current location.");
-            return SensorValues.None(3);
+            return SensorValues.None(3).getValues();
         }
 
         if (!hasBeenUpdatedSinceLastRetrieval()) {
@@ -68,7 +64,7 @@ class PhoneLocationListener implements LocationListener {
         }
 
         this.lastRetrievedTimeStamp = currentLocation.getTime();
-        return currentLocation;
+        return currentLocation.getValues();
     }
 
     private Boolean hasBeenUpdatedSinceLastRetrieval() {

@@ -26,9 +26,6 @@ class SensorValues {
     }
 
     float[] getValues() {
-        if (this.values == null)
-            return new float[]{Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN};
-        else
-            return this.values;
+        return this.values;
     }
 }

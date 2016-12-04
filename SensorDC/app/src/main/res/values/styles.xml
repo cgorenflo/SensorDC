@@ -27,7 +27,7 @@
         <item name="android:layout_width">50pt</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:inputType">numberDecimal</item>
-        <item name="android:textAlignment">textEnd</item>
+        <item name="android:gravity">right</item>
         <item name="android:layout_alignParentEnd">true</item>
     </style>
 

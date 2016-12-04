@@ -9,7 +9,7 @@ android {
         minSdkVersion 18
         //noinspection OldTargetApi
         targetSdkVersion 18
-        versionCode 23
+        versionCode 24
         versionName "1.5"
     }
 

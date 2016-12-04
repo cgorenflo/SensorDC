@@ -10,14 +10,20 @@ class PhoneSensorListener implements SensorEventListener {
     private static final long TIMESTAMP_NOT_SET = -1;
     private static final String TAG = PhoneSensorListener.class.getSimpleName();
     private final int sensorType;
+    private final int numberOfValues;
     private long lastRetrievedTimeStamp;
     private SensorValues sensorEvent;
 
     PhoneSensorListener(int sensorType) {
+        this(sensorType, 5);
+    }
+
+    PhoneSensorListener(int sensorType, int numberOfValues) {
         super();
         this.sensorType = sensorType;
+        this.numberOfValues = numberOfValues;
         this.lastRetrievedTimeStamp = TIMESTAMP_NOT_SET;
-        this.sensorEvent = SensorValues.None(5);
+        this.sensorEvent = SensorValues.None(numberOfValues);
     }
 
     @Override
@@ -29,7 +35,7 @@ class PhoneSensorListener implements SensorEventListener {
     public void onAccuracyChanged(Sensor sensor, int i) {
     }
 
-    SensorValues getCurrentValues() {
+    float[] getCurrentValues() {
         // Event might change in the meantime, so store reference locally
         SensorValues currentValues = this.sensorEvent;
 
@@ -40,7 +46,7 @@ class PhoneSensorListener implements SensorEventListener {
         }
 
         this.lastRetrievedTimeStamp = currentValues.getTime();
-        return currentValues;
+        return currentValues.getValues() == null ? SensorValues.None(numberOfValues).getValues() : currentValues.getValues();
     }
 
     private Boolean hasBeenUpdatedSinceLastRetrieval() {

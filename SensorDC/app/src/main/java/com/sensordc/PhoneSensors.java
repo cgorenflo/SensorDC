@@ -30,8 +30,8 @@ class PhoneSensors {
         Sensor linearAcceleration = this.sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         Sensor rotationVector = this.sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 
-        this.linearAccelerationListener = new PhoneSensorListener(Sensor.TYPE_LINEAR_ACCELERATION);
-        this.rotationVectorListener = new PhoneSensorListener(Sensor.TYPE_ROTATION_VECTOR);
+        this.linearAccelerationListener = new PhoneSensorListener(Sensor.TYPE_LINEAR_ACCELERATION,3);
+        this.rotationVectorListener = new PhoneSensorListener(Sensor.TYPE_ROTATION_VECTOR,4);
 
         registerSensorListener(linearAcceleration, this.linearAccelerationListener, Sensor.TYPE_LINEAR_ACCELERATION);
         registerSensorListener(rotationVector, this.rotationVectorListener, Sensor.TYPE_ROTATION_VECTOR);
@@ -68,15 +68,15 @@ class PhoneSensors {
     }
 
     float[] getLinearAcceleration() {
-        return this.linearAccelerationListener.getCurrentValues().getValues();
+        return this.linearAccelerationListener.getCurrentValues();
     }
 
     float[] getRotationVector() {
-        return this.rotationVectorListener.getCurrentValues().getValues();
+        return this.rotationVectorListener.getCurrentValues();
     }
 
     float[] getLocation() {
-        return this.locationListener.getCurrentValues().getValues();
+        return this.locationListener.getCurrentValues();
     }
 
     BatteryStatus getBatteryStatus() {
