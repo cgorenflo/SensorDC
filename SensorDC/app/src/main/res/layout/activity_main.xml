@@ -176,6 +176,12 @@
             android:text="@{settings.buildVersion}"/>
 
         <Button
+            android:id="@+id/debugbutton"
+            style="@style/DebugButton"
+            android:onClick="clickDebug"
+            android:text="@string/debug"/>
+
+        <Button
             android:id="@+id/savebutton"
             style="@style/SaveButton"
             android:onClick="clickSave"

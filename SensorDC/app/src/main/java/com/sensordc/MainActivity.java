@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import com.sensordc.databinding.ActivityMainBinding;
@@ -18,6 +17,11 @@ public class MainActivity extends Activity {
         SensorDCLog.i(TAG, "Save calibration settings.");
         this.settings.save();
         showToastNotification();
+    }
+
+    public void clickDebug(View debugButton) {
+        Intent intent = new Intent(this, DebugActivity.class);
+        startActivity(intent);
     }
 
     private void showToastNotification() {

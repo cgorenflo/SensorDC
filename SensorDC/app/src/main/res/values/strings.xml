@@ -11,4 +11,15 @@
     <string name="save">Save</string>
     <string name="battery">Battery</string>
     <string name="ambient">Ambient</string>
+    <string name="lastupdate">Latest Update</string>
+    <string name="codeversion">Code Version</string>
+    <string name="gps">GPS (Lat, Long)</string>
+    <string name="dischargecurrent">Discharge Current</string>
+    <string name="chargingcurrent">Charging Current</string>
+    <string name="voltage">Voltage</string>
+    <string name="acceleration">Acceleration (x,y,z)</string>
+    <string name="rotation">Rotation (x,y,z,r)</string>
+    <string name="temperature">Temperature (box, ambient)</string>
+    <string name="debug">Debug screen</string>
+
 </resources>
