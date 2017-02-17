@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import com.sensordc.databinding.ActivityDebugBinding;
+import com.sensordc.logging.SensorDCLog;
+import com.sensordc.settings.Settings;
 
 public class DebugActivity extends Activity {
     private static final String TAG = DebugActivity.class.getSimpleName();
@@ -21,7 +23,9 @@ public class DebugActivity extends Activity {
 
     private void bindSettingsToViews() {
         ActivityDebugBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_debug);
-        this.viewModel = new DataViewModel();
+        Settings settings = new Settings(getSharedPreferences(getResources().getString(R.string
+                .settingPreferenceName), MODE_PRIVATE));
+        this.viewModel = new DataViewModel(this, settings);
         binding.setDisplaydata(this.viewModel);
     }
 }

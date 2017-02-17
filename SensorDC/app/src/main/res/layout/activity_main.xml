@@ -7,7 +7,7 @@
 
         <variable
             name="settings"
-            type="com.sensordc.Settings"/>
+            type="com.sensordc.settings.Settings" />
     </data>
 
     <RelativeLayout

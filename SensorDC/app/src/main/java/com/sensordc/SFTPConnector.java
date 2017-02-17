@@ -2,6 +2,7 @@ package com.sensordc;
 
 import android.util.Log;
 import com.jcraft.jsch.*;
+import com.sensordc.logging.SensorDCLog;
 
 import java.io.File;
 import java.util.ArrayList;

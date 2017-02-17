@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 import com.sensordc.databinding.ActivityMainBinding;
+import com.sensordc.logging.SensorDCLog;
+import com.sensordc.settings.Settings;
 
 public class MainActivity extends Activity {
     private static final String PREFS_NAME = "SensorDCPrefs";

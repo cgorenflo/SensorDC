@@ -1,23 +1,16 @@
-package com.sensordc;
+package com.sensordc.logging;
 
-abstract class OutputFormatter {
+import com.sensordc.sensors.SensorKit;
 
-    abstract String getVersionLabel();
-
-    abstract String createHeader();
-
-    abstract String format(String currentTimeStamp, SensorData data);
-}
-
-class CSVFormatter extends OutputFormatter {
+public class CSVFormatter extends OutputFormatter {
 
     @Override
-    String getVersionLabel() {
+    public String getVersionLabel() {
         return "v3";
     }
 
     @Override
-    String createHeader() {
+    public String createHeader() {
         CSVHeader header = new CSVHeader();
         header.addColumn("timestamp");
         header.addColumn("IMEI");
@@ -44,28 +37,28 @@ class CSVFormatter extends OutputFormatter {
     }
 
     @Override
-    String format(String currentTimeStamp, SensorData data) {
+    public String format(String currentTimeStamp, SensorKit sensorKit) {
         CSVLine sensorData = new CSVLine();
         sensorData.addColumn(currentTimeStamp);
-        sensorData.addColumn(data.deviceID);
-        sensorData.addColumn(data.versionCode);
-        sensorData.addColumn(data.gpsLatitude);
-        sensorData.addColumn(data.gpsLongitude);
-        sensorData.addColumn(data.gpsAccuracy);
-        sensorData.addColumn(data.current);
-        sensorData.addColumn(data.dischargeCurrent);
-        sensorData.addColumn(data.voltage);
-        sensorData.addColumn(data.linearAccelerationX);
-        sensorData.addColumn(data.linearAccelerationY);
-        sensorData.addColumn(data.linearAccelerationZ);
-        sensorData.addColumn(data.rotationX);
-        sensorData.addColumn(data.rotationY);
-        sensorData.addColumn(data.rotationZ);
-        sensorData.addColumn(data.rotationScalar);
-        sensorData.addColumn(data.batteryTemperature);
-        sensorData.addColumn(data.ambientTemperature);
-        sensorData.addColumn(data.batteryPercentage);
-        sensorData.addColumn(data.isChargingOrFull);
+        sensorData.addColumn(sensorKit.deviceID);
+        sensorData.addColumn(sensorKit.versionCode);
+        sensorData.addColumn(sensorKit.gpsLatitude);
+        sensorData.addColumn(sensorKit.gpsLongitude);
+        sensorData.addColumn(sensorKit.gpsAccuracy);
+        sensorData.addColumn(sensorKit.current);
+        sensorData.addColumn(sensorKit.dischargeCurrent);
+        sensorData.addColumn(sensorKit.voltage);
+        sensorData.addColumn(sensorKit.linearAccelerationX);
+        sensorData.addColumn(sensorKit.linearAccelerationY);
+        sensorData.addColumn(sensorKit.linearAccelerationZ);
+        sensorData.addColumn(sensorKit.rotationX);
+        sensorData.addColumn(sensorKit.rotationY);
+        sensorData.addColumn(sensorKit.rotationZ);
+        sensorData.addColumn(sensorKit.rotationScalar);
+        sensorData.addColumn(sensorKit.batteryTemperature);
+        sensorData.addColumn(sensorKit.ambientTemperature);
+        sensorData.addColumn(sensorKit.batteryPercentage);
+        sensorData.addColumn(sensorKit.isChargingOrFull);
 
         return sensorData.toString();
     }

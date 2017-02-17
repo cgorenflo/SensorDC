@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
+import com.sensordc.logging.SensorDCLog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

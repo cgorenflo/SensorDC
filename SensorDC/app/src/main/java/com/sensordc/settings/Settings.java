@@ -1,8 +1,10 @@
-package com.sensordc;
+package com.sensordc.settings;
 
 import android.content.SharedPreferences;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
+import com.sensordc.BuildConfig;
+import com.sensordc.settings.Calibration;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -19,7 +21,7 @@ public class Settings {
     private final Setting v2battery = new Setting("v2battery", 636.0f);
     private final ArrayList<Setting> allSettings = populateAllSettings();
 
-    Settings(SharedPreferences storedSettings) {
+    public Settings(SharedPreferences storedSettings) {
         this.storedSettings = storedSettings;
         load();
     }
@@ -84,12 +86,12 @@ public class Settings {
         return "Version " + BuildConfig.VERSION_CODE;
     }
 
-    Calibration getAmbientCalibration() {
+    public Calibration getAmbientCalibration() {
         return new Calibration(this.t1ambient.getValue(), this.t2ambient.getValue(), this.v1ambient.getValue(),
                 this.v2ambient.getValue());
     }
 
-    Calibration getBatteryCalibration() {
+    public Calibration getBatteryCalibration() {
         return new Calibration(this.t1battery.getValue(), this.t2battery.getValue(), this.v1battery.getValue(),
                 this.v2battery.getValue());
     }
@@ -110,7 +112,7 @@ public class Settings {
         return allSets;
     }
 
-    void save() {
+    public void save() {
         SharedPreferences.Editor editor = this.storedSettings.edit();
         for (Setting setting : this.allSettings) {
             setting.save(editor);

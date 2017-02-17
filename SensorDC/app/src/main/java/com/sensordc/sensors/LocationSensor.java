@@ -1,33 +1,41 @@
-package com.sensordc;
+package com.sensordc.sensors;
 
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import com.sensordc.logging.SensorDCLog;
 
-class PhoneLocationListener implements LocationListener {
+public class LocationSensor implements LocationListener {
     private static final long TIMESTAMP_NOT_SET = -1;
-    private static final String TAG = PhoneLocationListener.class.getSimpleName();
+    private static final String TAG = LocationSensor.class.getSimpleName();
     private long lastRetrievedTimeStamp;
-    private SensorValues location;
+    private PhidgetSensor location;
+    private LocationManager locationManager;
+    private String provider;
+    private long minTimeBetweenGPSUpdates;
+    private float minDistanceBetweenGPSUpdates;
 
-    PhoneLocationListener(LocationManager locationManager, String bestProvider, long minTimeBetweenGPSUpdates,
-                          float minDistanceBetweenGPSUpdates) {
+    LocationSensor(LocationManager locationManager, String provider, long minTimeBetweenGPSUpdates, float
+            minDistanceBetweenGPSUpdates) {
         super();
-        this.lastRetrievedTimeStamp = TIMESTAMP_NOT_SET;
-
-        registerListener(locationManager, bestProvider, minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates);
+        this.locationManager = locationManager;
+        this.provider = provider;
+        this.minTimeBetweenGPSUpdates = minTimeBetweenGPSUpdates;
+        this.minDistanceBetweenGPSUpdates = minDistanceBetweenGPSUpdates;
     }
 
-    private void registerListener(LocationManager locationManager, String bestProvider, long minTimeBetweenGPSUpdates,
-                                  float minDistanceBetweenGPSUpdates) {
-        locationManager.requestLocationUpdates(bestProvider, minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates,
-                this);
+    void initialize() {
+        locationManager.requestLocationUpdates(provider, minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates, this);
     }
 
     private void setLocation(Location location) {
-        this.location = new SensorValues(location.getTime(),
-                new float[]{(float) location.getLatitude(), (float) location.getLongitude(), location.getAccuracy()});
+        this.location = new PhidgetSensor(location.getTime(), new float[]{(float) location.getLatitude(), (float)
+                location.getLongitude(), location.getAccuracy()});
+    }
+
+    void stop() {
+        this.locationManager.removeUpdates(this);
     }
 
     @Override
@@ -37,7 +45,6 @@ class PhoneLocationListener implements LocationListener {
 
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) {
-
     }
 
     @Override
@@ -52,11 +59,11 @@ class PhoneLocationListener implements LocationListener {
 
     float[] getCurrentValues() {
         // Location might change in the meantime, so store reference locally
-        SensorValues currentLocation = this.location;
+        PhidgetSensor currentLocation = this.location;
 
         if (currentLocation == null) {
             SensorDCLog.e(TAG, "Could not retrieve current location.");
-            return SensorValues.None(3).getValues();
+            return PhidgetSensor.None(3).getValues();
         }
 
         if (!hasBeenUpdatedSinceLastRetrieval()) {

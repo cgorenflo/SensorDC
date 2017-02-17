@@ -1,26 +1,29 @@
-package com.sensordc;
+package com.sensordc.sensors;
 
 import com.phidgets.event.SensorChangeEvent;
 import com.phidgets.event.SensorChangeListener;
+import com.sensordc.logging.SensorDCLog;
+import com.sensordc.settings.Calibration;
+import com.sensordc.settings.Settings;
 
 
-class PhidgetSensorListener implements SensorChangeListener {
+public class PhidgetSensorListener implements SensorChangeListener {
     private static final String TAG = PhidgetSensorListener.class.getSimpleName();
     private static final long TIMESTAMP_NOT_SET = -1;
     private final Settings settings;
     private final Object sensorChangeLock = new Object();
-    private SensorValues current;
-    private SensorValues voltage;
-    private SensorValues ambientTemperature;
-    private SensorValues batteryTemperature;
-    private SensorValues dischargeCurrent;
+    private PhidgetSensor current;
+    private PhidgetSensor voltage;
+    private PhidgetSensor ambientTemperature;
+    private PhidgetSensor batteryTemperature;
+    private PhidgetSensor dischargeCurrent;
     private long currentLastReceived;
     private long dischargeCurrentLastReceived;
     private long voltageLastReceived;
     private long ambientTemperatureLastReceived;
     private long batteryTemperatureLastReceived;
 
-    PhidgetSensorListener(Settings settings) {
+    public PhidgetSensorListener(Settings settings) {
         this.currentLastReceived = TIMESTAMP_NOT_SET;
         this.dischargeCurrentLastReceived = TIMESTAMP_NOT_SET;
         this.voltageLastReceived = TIMESTAMP_NOT_SET;
@@ -31,12 +34,12 @@ class PhidgetSensorListener implements SensorChangeListener {
         clearValues();
     }
 
-    void clearValues() {
-        this.current = SensorValues.None(1);
-        this.dischargeCurrent = SensorValues.None(1);
-        this.voltage = SensorValues.None(1);
-        this.batteryTemperature = SensorValues.None(1);
-        this.ambientTemperature = SensorValues.None(1);
+    public void clearValues() {
+        this.current = PhidgetSensor.None(1);
+        this.dischargeCurrent = PhidgetSensor.None(1);
+        this.voltage = PhidgetSensor.None(1);
+        this.batteryTemperature = PhidgetSensor.None(1);
+        this.ambientTemperature = PhidgetSensor.None(1);
     }
 
     public void sensorChanged(SensorChangeEvent event) {
@@ -49,21 +52,21 @@ class PhidgetSensorListener implements SensorChangeListener {
 
             switch (index) {
                 case 0:
-                    this.current = new SensorValues(System.currentTimeMillis(), value);
+                    this.current = new PhidgetSensor(System.currentTimeMillis(), value);
                     break;
                 case 1:
-                    this.voltage = new SensorValues(System.currentTimeMillis(), calculateVoltage(value));
+                    this.voltage = new PhidgetSensor(System.currentTimeMillis(), calculateVoltage(value));
                     break;
                 case 2:
-                    this.ambientTemperature = new SensorValues(System.currentTimeMillis(),
+                    this.ambientTemperature = new PhidgetSensor(System.currentTimeMillis(),
                             interpolateTemperature(value, ambientCal.T1, ambientCal.T2, ambientCal.V1, ambientCal.V2));
                     break;
                 case 3:
-                    this.batteryTemperature = new SensorValues(System.currentTimeMillis(),
+                    this.batteryTemperature = new PhidgetSensor(System.currentTimeMillis(),
                             interpolateTemperature(value, batteryCal.T1, batteryCal.T2, batteryCal.V1, batteryCal.V2));
                     break;
                 case 4:
-                    this.dischargeCurrent = new SensorValues(System.currentTimeMillis(), value);
+                    this.dischargeCurrent = new PhidgetSensor(System.currentTimeMillis(), value);
                     break;
                 default:
                     SensorDCLog.d(TAG, "Phidget sensor index out of bounds");
@@ -84,9 +87,9 @@ class PhidgetSensorListener implements SensorChangeListener {
         return a * value + b;
     }
 
-    float getCurrent() {
+    public float getCurrent() {
         // value might change in between, therefore store in local variable
-        SensorValues current = this.current;
+        PhidgetSensor current = this.current;
 
         if (this.currentLastReceived == current.getTime()) {
             SensorDCLog.i(TAG, "Value of current sensor was not updated since last retrieval.");
@@ -96,9 +99,9 @@ class PhidgetSensorListener implements SensorChangeListener {
         return current.getValues()[0];
     }
 
-    float getDischargeCurrent() {
+    public float getDischargeCurrent() {
         // value might change in between, therefore store in local variable
-        SensorValues dischargeCurrent = this.dischargeCurrent;
+        PhidgetSensor dischargeCurrent = this.dischargeCurrent;
 
         if (this.dischargeCurrentLastReceived == dischargeCurrent.getTime()) {
             SensorDCLog.i(TAG, "Value of discharge current sensor was not updated since last retrieval.");
@@ -107,9 +110,9 @@ class PhidgetSensorListener implements SensorChangeListener {
         return dischargeCurrent.getValues()[0];
     }
 
-    float getVoltage() {
+    public float getVoltage() {
         // value might change in between, therefore store in local variable
-        SensorValues voltage = this.voltage;
+        PhidgetSensor voltage = this.voltage;
 
         if (this.voltageLastReceived == voltage.getTime()) {
             SensorDCLog.i(TAG, "Value of voltage sensor was not updated since last retrieval.");
@@ -118,9 +121,9 @@ class PhidgetSensorListener implements SensorChangeListener {
         return voltage.getValues()[0];
     }
 
-    float getAmbientTemperature() {
+    public float getAmbientTemperature() {
         // value might change in between, therefore store in local variable
-        SensorValues ambientTemperature = this.ambientTemperature;
+        PhidgetSensor ambientTemperature = this.ambientTemperature;
 
         if (this.ambientTemperatureLastReceived == ambientTemperature.getTime()) {
             SensorDCLog.i(TAG, "Value of ambient temperature sensor was not updated since last retrieval.");
@@ -129,9 +132,9 @@ class PhidgetSensorListener implements SensorChangeListener {
         return ambientTemperature.getValues()[0];
     }
 
-    float getBatteryTemperature() {
+    public float getBatteryTemperature() {
         // value might change in between, therefore store in local variable
-        SensorValues batteryTemperature = this.batteryTemperature;
+        PhidgetSensor batteryTemperature = this.batteryTemperature;
 
         if (this.batteryTemperatureLastReceived == batteryTemperature.getTime()) {
             SensorDCLog.i(TAG, "Value of battery temperature sensor was not updated since last retrieval.");

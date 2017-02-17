@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
         <variable
             name="displaydata"
-            type="com.sensordc.DataViewModel"/>
+            type="com.sensordc.DataViewModel" />
     </data>
 
     <LinearLayout
@@ -20,18 +20,17 @@
         android:orientation="vertical"
         tools:context="com.sensordc.DebugActivity">
 
-        <RelativeLayout
-            style="@style/SettingRow">
+        <RelativeLayout style="@style/SettingRow">
 
             <TextView
                 style="@style/InputLabel"
                 android:labelFor="@+id/lastupdate"
-                android:text="@string/lastupdate"/>
+                android:text="@string/lastupdate" />
 
             <TextView
                 android:id="@+id/lastupdate"
                 style="@style/Input"
-                android:text="@{displaydata.latestUpdate}"/>
+                android:text="@{displaydata.latestUpdate}" />
         </RelativeLayout>
 
         <RelativeLayout style="@style/SettingRow">
@@ -39,12 +38,12 @@
             <TextView
                 style="@style/InputLabel"
                 android:labelFor="@+id/codeversion"
-                android:text="@string/codeversion"/>
+                android:text="@string/codeversion" />
 
             <TextView
                 android:id="@+id/codeversion"
                 style="@style/Input"
-                android:text="@{displaydata.codeVersion}"/>
+                android:text="@{displaydata.codeVersion}" />
         </RelativeLayout>
 
         <!--<RelativeLayout style="@style/SettingRow">-->
@@ -88,35 +87,33 @@
         <!--android:text="@={settings.v2ambient.valueString}"/>-->
         <!--</RelativeLayout>-->
 
-        <!--<RelativeLayout-->
-        <!--style="@style/SettingRow">-->
+        <RelativeLayout style="@style/SettingRow">
 
-        <!--<TextView-->
-        <!--style="@style/InputLabel"-->
-        <!--android:labelFor="@+id/acceleration"-->
-        <!--android:text="@string/acceleration"/>-->
+            <TextView
+                style="@style/InputLabel"
+                android:labelFor="@+id/acceleration"
+                android:text="@string/acceleration" />
 
-        <!--<TextView-->
-        <!--android:id="@+id/acceleration"-->
-        <!--style="@style/Input"-->
-        <!--android:text="@={settings.t1battery.valueString}"/>-->
-        <!--</RelativeLayout>-->
+            <TextView
+                android:id="@+id/acceleration"
+                style="@style/Input"
+                android:text="@{displaydata.linearAcceleration}" />
+        </RelativeLayout>
 
-        <!--<RelativeLayout-->
-        <!--style="@style/SettingRow">-->
+        <RelativeLayout style="@style/SettingRow">
 
-        <!--<TextView-->
-        <!--style="@style/InputLabel"-->
-        <!--android:labelFor="@+id/rotation"-->
-        <!--android:text="@string/rotation"/>-->
+            <TextView
+                style="@style/InputLabel"
+                android:labelFor="@+id/rotation"
+                android:text="@string/rotation" />
 
-        <!--<TextView-->
-        <!--android:id="@+id/rotation"-->
-        <!--style="@style/Input"-->
-        <!--android:text="@={settings.t2battery.valueString}"/>-->
-        <!--</RelativeLayout>-->
-        <!--<RelativeLayout-->
-        <!--style="@style/SettingRow">-->
+            <TextView
+                android:id="@+id/rotation"
+                style="@style/Input"
+                android:text="@{displaydata.rotation}" />
+        </RelativeLayout>
+
+        <!--<RelativeLayout style="@style/SettingRow">-->
 
         <!--<TextView-->
         <!--style="@style/InputLabel"-->

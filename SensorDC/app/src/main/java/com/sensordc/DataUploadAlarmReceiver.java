@@ -3,8 +3,7 @@ package com.sensordc;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
-import android.util.Log;
-import android.widget.Toast;
+import com.sensordc.logging.SensorDCLog;
 
 public class DataUploadAlarmReceiver extends WakefulBroadcastReceiver {
 

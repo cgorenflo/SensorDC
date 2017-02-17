@@ -2,17 +2,18 @@ package com.sensordc;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.hardware.SensorManager;
-import android.location.LocationManager;
 import android.os.Handler;
-import android.telephony.TelephonyManager;
 import android.widget.Toast;
+import com.sensordc.logging.SensorDCLog;
+import com.sensordc.sensors.DeviceFactory;
+import com.sensordc.sensors.SensorKit;
+import com.sensordc.settings.Settings;
+import rx.functions.Action1;
+
 
 public class DataCollectionWakefulService extends IntentService {
 
     private static final String TAG = DataCollectionWakefulService.class.getSimpleName();
-
-    private final Handler uiHandler = new Handler();
 
     public DataCollectionWakefulService() {
         super(TAG);
@@ -20,12 +21,9 @@ public class DataCollectionWakefulService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        int minDistanceBetweenGPSUpdates = getResources().getInteger(R.integer.minDistanceBetweenGPSUpdates);
-        int minTimeBetweenGPSUpdates = getResources().getInteger(R.integer.minTimeBetweenGPSUpdatesInMS);
-
         try {
             createToast("Starting data collection");
-            handleDataCollection(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates);
+            handleDataCollection();
         } catch (Exception e) {
             createToast("Data collection failed");
             SensorDCLog.e(TAG, "Data collection failed.", e);
@@ -36,7 +34,8 @@ public class DataCollectionWakefulService extends IntentService {
     }
 
     private void createToast(final String message) {
-        this.uiHandler.post(new Runnable() {
+        // Handler is needed to post a toast from a background thread to the UI thread
+        new Handler().post(new Runnable() {
             @Override
             public void run() {
                 Toast.makeText(DataCollectionWakefulService.this, message, Toast.LENGTH_SHORT).show();
@@ -44,46 +43,26 @@ public class DataCollectionWakefulService extends IntentService {
         });
     }
 
-    private void handleDataCollection(int minTimeBetweenGPSUpdates, int minDistanceBetweenGPSUpdates) {
+    private void handleDataCollection() {
         SensorDCLog.d(TAG, "Creating sensor managers.");
         Settings settings = new Settings(
                 getSharedPreferences(getResources().getString(R.string.settingPreferenceName), MODE_PRIVATE));
 
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        DeviceFactory factory = new DeviceFactory(this, settings);
 
-        SensorManager sensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
-        LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-        BatteryManager batteryManager = new BatteryManager(this);
-        PhoneSensors phoneSensors = new PhoneSensors(sensorManager, locationManager, batteryManager);
+        int minDistanceBetweenGPSUpdates = getResources().getInteger(R.integer.minDistanceBetweenGPSUpdates);
+        int minTimeBetweenGPSUpdates = getResources().getInteger(R.integer.minTimeBetweenGPSUpdatesInMS);
+        int delay = getResources().getInteger(R.integer.sensorRecordingDelayInMS);
+        SensorKit sensorKit = factory.assembleSensorKit(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates, delay);
 
-        PhidgetSensors phidgetSensors = new PhidgetSensors(new PhidgetManager(this, settings));
-
-        SensorDataCollector sensorDataCollector = new SensorDataCollector(telephonyManager, phoneSensors,
-                phidgetSensors);
-
-        try {
-            sensorDataCollector.initializeSensors(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates);
-            logSensorDataInIntervals(sensorDataCollector);
-        } finally {
-            SensorDCLog.flush();
-            sensorDataCollector.stop();
-        }
-    }
-
-    private void logSensorDataInIntervals(SensorDataCollector sensorDataCollector) {
         SensorDCLog.d(TAG, "Logging sensor values.");
-        SensorData sensorData = SensorData.Initialize();
-        while (!sensorData.isInStandBy()) {
 
-            //wait first so sensors have a chance to update
-            try {
-                Thread.sleep(getResources().getInteger(R.integer.sensorRecordingDelayInMS));
-            } catch (InterruptedException e) {
-                SensorDCLog.e(TAG, "Data collection thread was interrupted, stopping data collection", e);
-                break;
+        sensorKit.updated.toBlocking().forEach(new Action1<SensorKit>() {
+            @Override
+            public void call(SensorKit sensorKit1) {
+                SensorDCLog.log(sensorKit1);
             }
-            sensorData = sensorDataCollector.getCurrentSensorData();
-            SensorDCLog.log(sensorData);
-        }
+        });
+        SensorDCLog.flush();
     }
 }

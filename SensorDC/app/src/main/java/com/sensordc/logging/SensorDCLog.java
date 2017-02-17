@@ -1,7 +1,8 @@
-package com.sensordc;
+package com.sensordc.logging;
 
 import android.os.Environment;
 import android.util.Log;
+import com.sensordc.sensors.SensorKit;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedWriter;
@@ -24,12 +25,12 @@ public class SensorDCLog {
             "data";
     private static OutputFormatter formatter = new CSVFormatter();
 
-    static void w(String tag, String message, Throwable e) {
+    public static void w(String tag, String message, Throwable e) {
         Log.w(tag, message, e);
     }
 
-    static void log(SensorData data) {
-        String output = formatter.format(getCurrentTimeStamp("yyyy-MM-dd HH:mm:ss.SSS"), data);
+    public static void log(SensorKit sensorKit) {
+        String output = formatter.format(getCurrentTimeStamp("yyyy-MM-dd HH:mm:ss.SSS"), sensorKit);
         synchronized (dataLogs) {
             i(TAG, "Logging sensor readings.");
             d(TAG, output);
@@ -43,15 +44,15 @@ public class SensorDCLog {
         return canadianDateFormat.format(Calendar.getInstance().getTime());
     }
 
-    static void i(String tag, String message) {
+    public static void i(String tag, String message) {
         Log.i(tag, message);
     }
 
-    static void d(String tag, String message) {
+    public static void d(String tag, String message) {
         Log.d(tag, message);
     }
 
-    static void flush() {
+    public static void flush() {
         i(TAG, "Writing log to storage.");
         synchronized (dataLogs) {
             WriteToFile(dataLogs, tryCreateLogFile(tryCreatePath(), getCurrentFileName()));
@@ -106,7 +107,7 @@ public class SensorDCLog {
         return path;
     }
 
-    static String getCurrentFileName() {
+    public static String getCurrentFileName() {
         return "data" + formatter.getVersionLabel() + "." + getCurrentTimeStamp("yyyy-MM-dd-HH") + ".log";
     }
 
@@ -120,11 +121,11 @@ public class SensorDCLog {
         WriteToFile(header, logFile);
     }
 
-    static String getDataLogDirectory() {
+    public static String getDataLogDirectory() {
         return DataLogDirectory;
     }
 
-    static String getCurrentFileName_GPSLogger() {
+    public static String getCurrentFileName_GPSLogger() {
         return "gps-" + getCurrentTimeStamp("yyyy-MM-dd-HH") + ".txt";
     }
 

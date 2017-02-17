@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.widget.Toast;
+import com.sensordc.logging.SensorDCLog;
 
 public class MainService extends IntentService {
 
