@@ -8,26 +8,25 @@ import com.phidgets.event.AttachListener;
 import com.phidgets.event.DetachEvent;
 import com.phidgets.event.DetachListener;
 import com.sensordc.logging.SensorDCLog;
-import com.sensordc.settings.Settings;
 
 import java.util.Locale;
 
-public class PhidgetBoard {
+class PhidgetBoard {
 
     private static final String TAG = PhidgetBoard.class.getSimpleName();
-    private final Settings settings;
     private final Context context;
+    private final PhidgetSensor phidgetSensor;
     private InterfaceKitPhidget phidget;
     private AttachListener phidgetAttachListener;
     private DetachListener phidgetDetachListener;
-    private PhidgetSensorListener phidgetChangeListener;
 
-    public PhidgetBoard(Context context, Settings settings) {
-        this.settings = settings;
+
+    PhidgetBoard(Context context, PhidgetSensor sensor) {
         this.context = context;
+        this.phidgetSensor = sensor;
     }
 
-    public void initialize() {
+    void initialize() {
         SensorDCLog.d(TAG, "Initializing phidget sensors.");
         try {
             com.phidgets.usb.Manager.Initialize(this.context);
@@ -37,7 +36,7 @@ public class PhidgetBoard {
 
             this.phidget.addAttachListener(this.phidgetAttachListener);
             this.phidget.addDetachListener(this.phidgetDetachListener);
-            this.phidget.addSensorChangeListener(this.phidgetChangeListener);
+            this.phidget.addSensorChangeListener(this.phidgetSensor);
 
             this.phidget.openAny();
 
@@ -67,21 +66,20 @@ public class PhidgetBoard {
             }
         };
 
-        this.phidgetChangeListener = new PhidgetSensorListener(this.settings);
 
         this.phidgetDetachListener = new DetachListener() {
             public void detached(final DetachEvent event) {
-                PhidgetBoard.this.phidgetChangeListener.clearValues();
+                PhidgetBoard.this.phidgetSensor.clearValues();
                 SensorDCLog.i(TAG, "Phidget detached.");
             }
         };
     }
 
-    public void stop() {
+    void stop() {
         try {
             this.phidget.removeAttachListener(this.phidgetAttachListener);
             this.phidget.removeDetachListener(this.phidgetDetachListener);
-            this.phidget.removeSensorChangeListener(this.phidgetChangeListener);
+            this.phidget.removeSensorChangeListener(this.phidgetSensor);
 
             this.phidget.close();
             SensorDCLog.i(TAG, "Phidget stopped.");
@@ -92,23 +90,27 @@ public class PhidgetBoard {
         }
     }
 
-    public float getBatteryTemperature() {
-        return this.phidgetChangeListener == null ? Float.NaN : this.phidgetChangeListener.getBatteryTemperature();
+    float getBatteryTemperature() {
+        return this.phidgetSensor.getBatteryTemperature().values[0];
     }
 
-    public float getAmbientTemperature() {
-        return this.phidgetChangeListener == null ? Float.NaN : this.phidgetChangeListener.getAmbientTemperature();
+    float getAmbientTemperature() {
+        return this.phidgetSensor.getAmbientTemperature().values[0];
     }
 
-    public float getVoltage() {
-        return this.phidgetChangeListener == null ? Float.NaN : this.phidgetChangeListener.getVoltage();
+    float getVoltage() {
+        return this.phidgetSensor.getVoltage().values[0];
     }
 
-    public float getCurrent() {
-        return this.phidgetChangeListener.getCurrent();
+    float getCurrent() {
+        return this.phidgetSensor.getCurrent().values[0];
     }
 
-    public float getDischargeCurrent() {
-        return this.phidgetChangeListener == null ? Float.NaN : this.phidgetChangeListener.getDischargeCurrent();
+    float getDischargeCurrent() {
+        return this.phidgetSensor.getDischargeCurrent().values[0];
+    }
+
+    boolean foundActivity() {
+        return this.phidgetSensor.getCurrent().activityFound || this.phidgetSensor.getDischargeCurrent().activityFound;
     }
 }

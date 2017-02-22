@@ -2,8 +2,9 @@ package com.sensordc.logging;
 
 import com.sensordc.sensors.SensorKit;
 
-public abstract class OutputFormatter {
+abstract class OutputFormatter {
 
+    @SuppressWarnings("SameReturnValue")
     public abstract String getVersionLabel();
 
     public abstract String createHeader();

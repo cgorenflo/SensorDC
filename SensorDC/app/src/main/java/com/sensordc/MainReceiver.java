@@ -7,7 +7,7 @@ import com.sensordc.logging.SensorDCLog;
 
 public class MainReceiver extends WakefulBroadcastReceiver {
 
-    public static final String TAG = MainReceiver.class.getSimpleName();
+    private static final String TAG = MainReceiver.class.getSimpleName();
 
     @Override
     public void onReceive(Context context, Intent intent) {

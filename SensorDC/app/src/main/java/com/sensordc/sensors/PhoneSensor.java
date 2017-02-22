@@ -6,28 +6,34 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import com.sensordc.logging.SensorDCLog;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
-public class PhoneSensor implements SensorEventListener {
+class PhoneSensor implements SensorEventListener {
     private static final String TAG = PhoneSensor.class.getSimpleName();
     private final int sensorType;
-    private SensorManager sensorManager;
-    private int defaultResultLength;
+    private final SensorManager sensorManager;
+    private final int defaultValueCount;
+    private final List<Rule<Measurement>> activeStateRules;
     private Boolean updated;
-    private float[] values;
+    private SensorEvent sensorEvent;
+    private boolean isRegistered;
 
-    PhoneSensor(SensorManager sensorManager, int sensorType, int defaultResultLength) {
+    PhoneSensor(SensorManager sensorManager, int sensorType, int defaultValueCount) {
         super();
         this.sensorManager = sensorManager;
         this.sensorType = sensorType;
-        this.defaultResultLength = defaultResultLength;
+        this.defaultValueCount = defaultValueCount;
         updated = false;
+        isRegistered = false;
+        activeStateRules = new ArrayList<>();
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
+        this.sensorEvent = sensorEvent;
         this.updated = true;
-        this.values = sensorEvent.values;
     }
 
     @Override
@@ -42,6 +48,7 @@ public class PhoneSensor implements SensorEventListener {
     private void registerSensorListener(Sensor sensor) {
         if (sensor != null) {
             this.sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
+            isRegistered = true;
         } else {
             SensorDCLog.e(TAG, String.format(Locale.CANADA, "The sensor of type %d could not be initialized",
                     sensorType));
@@ -49,18 +56,34 @@ public class PhoneSensor implements SensorEventListener {
     }
 
     void stop() {
-        this.sensorManager.unregisterListener(this);
+        if (isRegistered) {
+            this.sensorManager.unregisterListener(this);
+            SensorDCLog.i(TAG, String.format(Locale.CANADA, "Sensor %d unregistered.", sensorType));
+        }
     }
 
-    public float[] getValues() {
+    Measurement measure() {
+        //sensorEvent might change while executing this method, so store a local reference to current values
+        SensorEvent event = sensorEvent;
         if (!updated) {
             SensorDCLog.i(TAG, String.format(Locale.CANADA, "No new values for sensor of type %d.", sensorType));
-            float[] val = new float[defaultResultLength];
-            for (int i = 0; i < val.length; i++) {
-                val[i] = Float.NaN;
-            }
-            return val;
+            return Measurement.None(defaultValueCount);
         }
-        return values;
+        Measurement m = new Measurement();
+        m.timestamp = event.timestamp;
+        m.values = event.values;
+        m.activityFound = true;
+
+        for (Rule<Measurement> rule : activeStateRules) {
+            if (rule.validate(m)) {
+                m.activityFound = false;
+                break;
+            }
+        }
+        return m;
+    }
+
+    void addActiveStateRule(Rule<Measurement> activeStateRule) {
+        activeStateRules.add(activeStateRule);
     }
 }

@@ -48,7 +48,7 @@ public class DataCollectionWakefulService extends IntentService {
         Settings settings = new Settings(
                 getSharedPreferences(getResources().getString(R.string.settingPreferenceName), MODE_PRIVATE));
 
-        DeviceFactory factory = new DeviceFactory(this, settings);
+        DeviceFactory factory = new DeviceFactory(this, settings, true);
 
         int minDistanceBetweenGPSUpdates = getResources().getInteger(R.integer.minDistanceBetweenGPSUpdates);
         int minTimeBetweenGPSUpdates = getResources().getInteger(R.integer.minTimeBetweenGPSUpdatesInMS);
@@ -59,8 +59,8 @@ public class DataCollectionWakefulService extends IntentService {
 
         sensorKit.updated.toBlocking().forEach(new Action1<SensorKit>() {
             @Override
-            public void call(SensorKit sensorKit1) {
-                SensorDCLog.log(sensorKit1);
+            public void call(SensorKit sensorKit) {
+                SensorDCLog.log(sensorKit);
             }
         });
         SensorDCLog.flush();

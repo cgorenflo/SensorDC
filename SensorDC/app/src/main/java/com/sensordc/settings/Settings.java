@@ -4,7 +4,6 @@ import android.content.SharedPreferences;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import com.sensordc.BuildConfig;
-import com.sensordc.settings.Calibration;
 
 import java.util.ArrayList;
 import java.util.Locale;

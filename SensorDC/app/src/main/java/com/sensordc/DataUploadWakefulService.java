@@ -1,5 +1,6 @@
 package com.sensordc;
 
+import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -21,6 +22,11 @@ public class DataUploadWakefulService extends IntentService {
 
     private static final String TAG = DataUploadWakefulService.class.getSimpleName();
     private final Handler uiHandler = new Handler();
+    private int remotePort;
+    private String remoteUser;
+    private String remoteHost;
+    private byte[] publicKey;
+    private byte[] privateKey;
 
     public DataUploadWakefulService() {
         super(TAG);
@@ -28,6 +34,17 @@ public class DataUploadWakefulService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+
+        // Handling resources inside the try block is not supported in API < 19, so it needs to be done first
+        Resources resources = this.getResources();
+
+        remoteHost = resources.getString(R.string.remoteHost);
+        remoteUser = resources.getString(R.string.remoteUser);
+        remotePort = resources.getInteger(R.integer.remotePort);
+
+        publicKey = ReadKey(resources.openRawResource(R.raw.publickey));
+        privateKey = ReadKey(resources.openRawResource(R.raw.privatekey));
+
         try {
             createToast("Starting data upload");
             handleUpload();
@@ -52,21 +69,11 @@ public class DataUploadWakefulService extends IntentService {
     private void handleUpload() {
         SensorDCLog.i(TAG, "Reading ssh connection settings.");
 
-        Resources resources = this.getResources();
-
-        String remoteHost = resources.getString(R.string.remoteHost);
-        String remoteUser = resources.getString(R.string.remoteUser);
-        int remotePort = resources.getInteger(R.integer.remotePort);
-
-        byte[] publicKey = ReadKey(resources.openRawResource(R.raw.publickey));
-        byte[] privateKey = ReadKey(resources.openRawResource(R.raw.privatekey));
-
         String remoteDirectory = getRemoteDirectoryName();
         String localDirectory = SensorDCLog.getDataLogDirectory();
 
-        SensorDCLog.i(TAG, String.format(Locale.CANADA,
-                "Upload starting with %s@%s:%s from local directory %s to remote directory %s", remoteUser, remoteHost,
-                remotePort, localDirectory, remoteDirectory));
+        SensorDCLog.i(TAG, String.format(Locale.CANADA, "Upload starting with %s@%s:%s from local directory %s to " +
+                "remote directory %s", remoteUser, remoteHost, remotePort, localDirectory, remoteDirectory));
         SFTPConnector connector = new SFTPConnector(remoteHost, remotePort, remoteUser, privateKey, publicKey);
 
         upload(connector, localDirectory, remoteDirectory);
@@ -88,6 +95,7 @@ public class DataUploadWakefulService extends IntentService {
         return stream.toByteArray();
     }
 
+    @SuppressLint("HardwareIds")
     private String getRemoteDirectoryName() {
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         //the logs are stored remotely in directories that are named like the correspondent device ID

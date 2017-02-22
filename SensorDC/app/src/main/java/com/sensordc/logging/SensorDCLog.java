@@ -20,11 +20,12 @@ public class SensorDCLog {
 
     private static final List<String> dataLogs = new ArrayList<>();
     private static final String TAG = SensorDCLog.class.getSimpleName();
-    private static String DataLogDirectory =
+    private static final String DataLogDirectory =
             Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "sensordc" + File.separator +
             "data";
-    private static OutputFormatter formatter = new CSVFormatter();
+    private static final OutputFormatter formatter = new CSVFormatter();
 
+    @SuppressWarnings("SameParameterValue")
     public static void w(String tag, String message, Throwable e) {
         Log.w(tag, message, e);
     }

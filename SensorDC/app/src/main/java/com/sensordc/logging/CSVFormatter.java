@@ -1,5 +1,6 @@
 package com.sensordc.logging;
 
+import com.sensordc.BuildConfig;
 import com.sensordc.sensors.SensorKit;
 
 public class CSVFormatter extends OutputFormatter {
@@ -40,32 +41,32 @@ public class CSVFormatter extends OutputFormatter {
     public String format(String currentTimeStamp, SensorKit sensorKit) {
         CSVLine sensorData = new CSVLine();
         sensorData.addColumn(currentTimeStamp);
-        sensorData.addColumn(sensorKit.deviceID);
-        sensorData.addColumn(sensorKit.versionCode);
-        sensorData.addColumn(sensorKit.gpsLatitude);
-        sensorData.addColumn(sensorKit.gpsLongitude);
-        sensorData.addColumn(sensorKit.gpsAccuracy);
-        sensorData.addColumn(sensorKit.current);
-        sensorData.addColumn(sensorKit.dischargeCurrent);
-        sensorData.addColumn(sensorKit.voltage);
-        sensorData.addColumn(sensorKit.linearAccelerationX);
-        sensorData.addColumn(sensorKit.linearAccelerationY);
-        sensorData.addColumn(sensorKit.linearAccelerationZ);
-        sensorData.addColumn(sensorKit.rotationX);
-        sensorData.addColumn(sensorKit.rotationY);
-        sensorData.addColumn(sensorKit.rotationZ);
-        sensorData.addColumn(sensorKit.rotationScalar);
-        sensorData.addColumn(sensorKit.batteryTemperature);
-        sensorData.addColumn(sensorKit.ambientTemperature);
-        sensorData.addColumn(sensorKit.batteryPercentage);
-        sensorData.addColumn(sensorKit.isChargingOrFull);
+        sensorData.addColumn(sensorKit.getDeviceID());
+        sensorData.addColumn(BuildConfig.VERSION_CODE);
+        sensorData.addColumn(sensorKit.getGpsLatitude());
+        sensorData.addColumn(sensorKit.getGpsLongitude());
+        sensorData.addColumn(sensorKit.getGpsAccuracy());
+        sensorData.addColumn(sensorKit.getCurrent());
+        sensorData.addColumn(sensorKit.getDischargeCurrent());
+        sensorData.addColumn(sensorKit.getVoltage());
+        sensorData.addColumn(sensorKit.getLinearAccelerationX());
+        sensorData.addColumn(sensorKit.getLinearAccelerationY());
+        sensorData.addColumn(sensorKit.getLinearAccelerationZ());
+        sensorData.addColumn(sensorKit.getRotationX());
+        sensorData.addColumn(sensorKit.getRotationY());
+        sensorData.addColumn(sensorKit.getRotationZ());
+        sensorData.addColumn(sensorKit.getRotationScalar());
+        sensorData.addColumn(sensorKit.getBatteryTemperature());
+        sensorData.addColumn(sensorKit.getAmbientTemperature());
+        sensorData.addColumn(sensorKit.getBatteryPercentage());
+        sensorData.addColumn(sensorKit.isChargingOrFull());
 
         return sensorData.toString();
     }
 
 
     private class CSVHeader {
-        private StringBuilder header = new StringBuilder();
+        private final StringBuilder header = new StringBuilder();
 
         @Override
         public String toString() {
@@ -83,10 +84,11 @@ public class CSVFormatter extends OutputFormatter {
     }
 
     private class CSVLine {
-        private StringBuilder line = new StringBuilder();
+        private final StringBuilder line = new StringBuilder();
 
-        void addColumn(int versionCode) {
-            addColumn(String.valueOf(versionCode));
+        @SuppressWarnings("SameParameterValue")
+        void addColumn(int columnName) {
+            addColumn(String.valueOf(columnName));
         }
 
         void addColumn(String columnName) {

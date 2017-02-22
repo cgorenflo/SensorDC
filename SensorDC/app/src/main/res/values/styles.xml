@@ -36,6 +36,12 @@
         <item name="android:layout_height">wrap_content</item>
     </style>
 
+    <style name="DebugRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">5pt</item>
+    </style>
+
     <style name="SaveButton">
         <item name="android:paddingStart">15pt</item>
         <item name="android:paddingEnd">15pt</item>

@@ -16,25 +16,39 @@ public class DataViewModel extends BaseObservable {
     private final SensorKit sensorKit;
 
     DataViewModel(Context context, Settings settings) {
-        DeviceFactory factory = new DeviceFactory(context, settings);
+        DeviceFactory factory = new DeviceFactory(context, settings, false);
         int minDistanceBetweenGPSUpdates = context.getResources().getInteger(R.integer.minDistanceBetweenGPSUpdates);
         int minTimeBetweenGPSUpdates = context.getResources().getInteger(R.integer.minTimeBetweenGPSUpdatesInMS);
-//        int delay = context.getResources().getInteger(R.integer.sensorRecordingDelayInMS);
         int delay = 2000;
         this.sensorKit = factory.assembleSensorKit(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates, delay);
 
         sensorKit.updated.subscribe(new Action1<SensorKit>() {
             @Override
             public void call(SensorKit kit) {
-                DataViewModel.this.update(kit);
+                DataViewModel.this.update();
             }
         });
     }
 
-    private void update(SensorKit kit) {
+    private void update() {
         notifyPropertyChanged(BR.latestUpdate);
-        notifyPropertyChanged(BR.linearAcceleration);
-        notifyPropertyChanged(BR.rotation);
+        notifyPropertyChanged(BR.linearAccelerationX);
+        notifyPropertyChanged(BR.linearAccelerationY);
+        notifyPropertyChanged(BR.linearAccelerationZ);
+        notifyPropertyChanged(BR.rotationX);
+        notifyPropertyChanged(BR.rotationY);
+        notifyPropertyChanged(BR.rotationZ);
+        notifyPropertyChanged(BR.rotationScalar);
+        notifyPropertyChanged(BR.gpsLat);
+        notifyPropertyChanged(BR.gpsLong);
+        notifyPropertyChanged(BR.gpsAcc);
+        notifyPropertyChanged(BR.batteryCharg);
+        notifyPropertyChanged(BR.batteryPerc);
+        notifyPropertyChanged(BR.box_Temperature);
+        notifyPropertyChanged(BR.amb_Temperature);
+        notifyPropertyChanged(BR.voltage);
+        notifyPropertyChanged(BR.chargingCurrent);
+        notifyPropertyChanged(BR.dischargeCurrent);
     }
 
     @Bindable
@@ -48,16 +62,90 @@ public class DataViewModel extends BaseObservable {
     }
 
     @Bindable
-    public String getLinearAcceleration() {
-        return "".concat(String.valueOf(this.sensorKit.linearAccelerationX)).concat("\t").concat(String.valueOf(this
-                .sensorKit.linearAccelerationY)).concat("\t").concat(String.valueOf(this.sensorKit
-                .linearAccelerationZ)).concat("\t");
+    public String getLinearAccelerationX() {
+        return String.valueOf(this.sensorKit.getLinearAccelerationX());
     }
 
     @Bindable
-    public String getRotation() {
-        return "".concat(String.valueOf(this.sensorKit.rotationX)).concat("\t").concat(String.valueOf(this.sensorKit
-                .rotationY)).concat("\t").concat(String.valueOf(this.sensorKit.rotationZ)).concat("\t").concat(String
-                .valueOf(this.sensorKit.rotationScalar));
+    public String getLinearAccelerationY() {
+        return String.valueOf(this.sensorKit.getLinearAccelerationX());
+    }
+
+    @Bindable
+    public String getLinearAccelerationZ() {
+        return String.valueOf(this.sensorKit.getLinearAccelerationZ());
+    }
+
+    @Bindable
+    public String getRotationX() {
+        return String.valueOf(this.sensorKit.getRotationX());
+    }
+
+    @Bindable
+    public String getRotationY() {
+        return String.valueOf(this.sensorKit.getRotationY());
+    }
+
+    @Bindable
+    public String getRotationZ() {
+        return String.valueOf(this.sensorKit.getRotationZ());
+    }
+
+    @Bindable
+    public String getRotationScalar() {
+        return String.valueOf(this.sensorKit.getRotationScalar());
+    }
+
+    @Bindable
+    public String getGpsLat() {
+        return String.valueOf(this.sensorKit.getGpsLatitude());
+    }
+
+    @Bindable
+    public String getGpsLong() {
+        return String.valueOf(this.sensorKit.getGpsLongitude());
+    }
+
+    @Bindable
+    public String getGpsAcc() {
+        return String.valueOf(this.sensorKit.getGpsAccuracy());
+    }
+
+    @Bindable
+    public String getBatteryPerc() {
+        return String.valueOf(this.sensorKit.getBatteryPercentage());
+    }
+
+    @Bindable
+    public String getBatteryCharg() {
+        if (sensorKit.isChargingOrFull()) {
+            return "charging or full";
+        } else
+            return "not charging";
+    }
+
+    @Bindable
+    public String getVoltage() {
+        return String.valueOf(sensorKit.getVoltage());
+    }
+
+    @Bindable
+    public String getChargingCurrent() {
+        return String.valueOf(sensorKit.getCurrent());
+    }
+
+    @Bindable
+    public String getDischargeCurrent() {
+        return String.valueOf(sensorKit.getDischargeCurrent());
+    }
+
+    @Bindable
+    public String getAmb_Temperature() {
+        return String.valueOf(sensorKit.getAmbientTemperature());
+    }
+
+    @Bindable
+    public String getBox_Temperature() {
+        return String.valueOf(sensorKit.getBatteryTemperature());
     }
 }
