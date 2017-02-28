@@ -17,7 +17,7 @@ public class SensorKit {
     private final PhidgetBoard phidgetBoard;
     private final String deviceID;
     private final List<LocationSensor> location;
-    private final List<Rule<HashMap<String, Measurement>>> activeStateRules;
+    private final List<Rule<Boolean>> activeStateRules;
     private final HashMap<String, Measurement> currentMeasurements;
     private float batteryPercentage;
     private boolean isChargingOrFull;
@@ -56,6 +56,7 @@ public class SensorKit {
                     @Override
                     public SensorKit call(Long aLong) {
                         currentMeasurements.clear();
+                        anySensorShowsActiveState = false;
                         setAcceleration();
                         setRotation();
                         setGps();
@@ -134,25 +135,14 @@ public class SensorKit {
     }
 
     private boolean foundActivity() {
-        boolean isActive = this.isInitialized && (anySensorShowsActiveState && anyIsActive(activeStateRules));
-        if (isActive) {
-            for (Rule<HashMap<String, Measurement>> activeStateRule : activeStateRules) {
-                activeStateRule.reset();
+        boolean kitIsActive = activeStateRules.isEmpty();
+        for (Rule<Boolean> activeStateRule : activeStateRules) {
+            if (activeStateRule.validate(anySensorShowsActiveState)) {
+                kitIsActive = true;
             }
         }
-        return isActive;
-    }
 
-    private boolean anyIsActive(List<Rule<HashMap<String, Measurement>>> activeStateRules) {
-        if (activeStateRules.isEmpty())
-            return true;
-
-        for (Rule<HashMap<String, Measurement>> activeStateRule : activeStateRules) {
-            if (activeStateRule.validate(currentMeasurements)) {
-                return true;
-            }
-        }
-        return false;
+        return this.isInitialized && (anySensorShowsActiveState || kitIsActive);
     }
 
     private void initialize() {
@@ -178,7 +168,7 @@ public class SensorKit {
         this.phidgetBoard.stop();
     }
 
-    void addActiveStateRule(Rule<HashMap<String, Measurement>> activeStateRule) {
+    void addActiveStateRule(Rule<Boolean> activeStateRule) {
         activeStateRules.add(activeStateRule);
     }
 

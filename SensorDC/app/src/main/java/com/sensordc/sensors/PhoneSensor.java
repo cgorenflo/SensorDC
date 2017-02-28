@@ -72,11 +72,11 @@ class PhoneSensor implements SensorEventListener {
         Measurement m = new Measurement();
         m.timestamp = event.timestamp;
         m.values = event.values;
-        m.activityFound = true;
+        m.activityFound = activeStateRules.isEmpty();
 
         for (Rule<Measurement> rule : activeStateRules) {
             if (rule.validate(m)) {
-                m.activityFound = false;
+                m.activityFound = true;
                 break;
             }
         }
