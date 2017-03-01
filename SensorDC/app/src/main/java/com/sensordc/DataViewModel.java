@@ -6,6 +6,7 @@ import android.databinding.Bindable;
 import com.sensordc.sensors.DeviceFactory;
 import com.sensordc.sensors.SensorKit;
 import com.sensordc.settings.Settings;
+import rx.Subscription;
 import rx.functions.Action1;
 
 import java.text.DateFormat;
@@ -14,15 +15,16 @@ import java.util.Date;
 public class DataViewModel extends BaseObservable {
 
     private final SensorKit sensorKit;
+    private final Subscription subscription;
 
     DataViewModel(Context context, Settings settings) {
-        DeviceFactory factory = new DeviceFactory(context, settings, false);
+        DeviceFactory factory = new DeviceFactory(context, settings);
         int minDistanceBetweenGPSUpdates = context.getResources().getInteger(R.integer.minDistanceBetweenGPSUpdates);
         int minTimeBetweenGPSUpdates = context.getResources().getInteger(R.integer.minTimeBetweenGPSUpdatesInMS);
         int delay = 2000;
-        this.sensorKit = factory.assembleSensorKit(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates, delay);
+        this.sensorKit = factory.assembleSensorKit(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates, delay, true);
 
-        sensorKit.updated.subscribe(new Action1<SensorKit>() {
+        subscription = sensorKit.updated.subscribe(new Action1<SensorKit>() {
             @Override
             public void call(SensorKit kit) {
                 DataViewModel.this.update();
@@ -147,5 +149,9 @@ public class DataViewModel extends BaseObservable {
     @Bindable
     public String getBox_Temperature() {
         return String.valueOf(sensorKit.getBatteryTemperature());
+    }
+
+    public void stopUpdates() {
+        subscription.unsubscribe();
     }
 }

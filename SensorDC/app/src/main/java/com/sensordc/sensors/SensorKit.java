@@ -21,11 +21,6 @@ public class SensorKit {
     private final HashMap<String, Measurement> currentMeasurements;
     private float batteryPercentage;
     private boolean isChargingOrFull;
-    private float batteryTemperature;
-    private float ambientTemperature;
-    private float voltage;
-    private float current;
-    private float dischargeCurrent;
     private boolean isInitialized;
     private boolean anySensorShowsActiveState;
     private PhoneSensor acceleration;
@@ -40,9 +35,6 @@ public class SensorKit {
         anySensorShowsActiveState = false;
         activeStateRules = new ArrayList<>();
         currentMeasurements = new HashMap<>();
-        currentMeasurements.put("gps", Measurement.None(3));
-        currentMeasurements.put("acceleration", Measurement.None(3));
-        currentMeasurements.put("rotation", Measurement.None(4));
 
         updated = Observable.defer(new Func0<Observable<SensorKit>>() {
             @Override
@@ -57,13 +49,47 @@ public class SensorKit {
                     public SensorKit call(Long aLong) {
                         currentMeasurements.clear();
                         anySensorShowsActiveState = false;
-                        setAcceleration();
-                        setRotation();
-                        setGps();
-                        setBattery();
-                        setPhidgetMeasurement();
+                        measure();
+
+                        for (Measurement m : currentMeasurements.values()) {
+                            anySensorShowsActiveState |= m.activityFound;
+                        }
 
                         return SensorKit.this;
+                    }
+
+                    private void measure() {
+                        setGps();
+                        setBattery();
+
+                        currentMeasurements.put("acceleration", acceleration.measure());
+                        currentMeasurements.put("rotation", rotation.measure());
+                        currentMeasurements.put("ambientTemperature", SensorKit.this.phidgetBoard
+                                .ambientTemperatureSensor.measure());
+                        currentMeasurements.put("batteryTemperature", SensorKit.this.phidgetBoard
+                                .batteryTemperatureSensor.measure());
+                        currentMeasurements.put("dischargeCurrent", SensorKit.this.phidgetBoard
+                                .dischargeCurrentSensor.measure());
+                        currentMeasurements.put("current", SensorKit.this.phidgetBoard.currentSensor.measure());
+                        currentMeasurements.put("voltage", SensorKit.this.phidgetBoard.voltageSensor.measure());
+                    }
+
+                    private void setBattery() {
+                        battery.measure();
+                        batteryPercentage = battery.getBatteryPercentage();
+                        isChargingOrFull = battery.getIsChargingOrFull();
+                    }
+
+                    private void setGps() {
+                        currentMeasurements.put("gps", Measurement.None(3));
+
+                        for (LocationSensor sensor : location) {
+                            Measurement loc = sensor.measure();
+                            if (!Float.isNaN(getGpsAccuracy()) && !Float.isNaN(loc.values[2]) && loc.values[2] <
+                                    getGpsAccuracy() || Float.isNaN(getGpsAccuracy())) {
+                                currentMeasurements.put("gps", loc);
+                            }
+                        }
                     }
                 }).doOnUnsubscribe(new Action0() {
                     @Override
@@ -78,44 +104,6 @@ public class SensorKit {
                 });
             }
         });
-    }
-
-    private void setPhidgetMeasurement() {
-        ambientTemperature = phidgetBoard.getAmbientTemperature();
-        batteryTemperature = phidgetBoard.getBatteryTemperature();
-        dischargeCurrent = phidgetBoard.getDischargeCurrent();
-        current = phidgetBoard.getCurrent();
-        voltage = phidgetBoard.getVoltage();
-        anySensorShowsActiveState |= phidgetBoard.foundActivity();
-    }
-
-    private void setBattery() {
-        battery.measure();
-        batteryPercentage = battery.getBatteryPercentage();
-        isChargingOrFull = battery.getIsChargingOrFull();
-    }
-
-    private void setGps() {
-        currentMeasurements.put("gps", Measurement.None(3));
-
-        for (LocationSensor sensor : location) {
-            Measurement loc = sensor.measure();
-            if (!Float.isNaN(getGpsAccuracy()) && !Float.isNaN(loc.values[2]) && loc.values[2] < getGpsAccuracy() ||
-                    Float.isNaN(getGpsAccuracy())) {
-                currentMeasurements.put("gps", loc);
-                anySensorShowsActiveState |= loc.activityFound;
-            }
-        }
-    }
-
-    private void setRotation() {
-        currentMeasurements.put("rotation", rotation.measure());
-        anySensorShowsActiveState |= currentMeasurements.get("rotation").activityFound;
-    }
-
-    private void setAcceleration() {
-        currentMeasurements.put("acceleration", acceleration.measure());
-        anySensorShowsActiveState |= currentMeasurements.get("acceleration").activityFound;
     }
 
     void addLocationSensor(LocationSensor sensor) {
@@ -135,7 +123,7 @@ public class SensorKit {
     }
 
     private boolean foundActivity() {
-        boolean kitIsActive = activeStateRules.isEmpty();
+        boolean kitIsActive = !activeStateRules.isEmpty();
         for (Rule<Boolean> activeStateRule : activeStateRules) {
             if (activeStateRule.validate(anySensorShowsActiveState)) {
                 kitIsActive = true;
@@ -177,43 +165,43 @@ public class SensorKit {
     }
 
     public float getGpsLatitude() {
-        return currentMeasurements.get("gps").values[0];
+        return getValue("gps", 0);
     }
 
     public float getGpsLongitude() {
-        return currentMeasurements.get("gps").values[1];
+        return getValue("gps", 1);
     }
 
     public float getGpsAccuracy() {
-        return currentMeasurements.get("gps").values[2];
+        return getValue("gps", 2);
     }
 
     public float getLinearAccelerationX() {
-        return currentMeasurements.get("acceleration").values[0];
+        return getValue("acceleration", 0);
     }
 
     public float getLinearAccelerationY() {
-        return currentMeasurements.get("acceleration").values[1];
+        return getValue("acceleration", 1);
     }
 
     public float getLinearAccelerationZ() {
-        return currentMeasurements.get("acceleration").values[2];
+        return getValue("acceleration", 2);
     }
 
     public float getRotationX() {
-        return currentMeasurements.get("rotation").values[0];
+        return getValue("rotation", 0);
     }
 
     public float getRotationY() {
-        return currentMeasurements.get("rotation").values[1];
+        return getValue("rotation", 1);
     }
 
     public float getRotationZ() {
-        return currentMeasurements.get("rotation").values[2];
+        return getValue("rotation", 2);
     }
 
     public float getRotationScalar() {
-        return currentMeasurements.get("rotation").values[3];
+        return getValue("rotation", 3);
     }
 
     public float getBatteryPercentage() {
@@ -225,22 +213,30 @@ public class SensorKit {
     }
 
     public float getBatteryTemperature() {
-        return batteryTemperature;
+        return getValue("batteryTemperature", 0);
     }
 
     public float getAmbientTemperature() {
-        return ambientTemperature;
+        return getValue("ambientTemperature", 0);
     }
 
     public float getVoltage() {
-        return voltage;
+        return getValue("voltage", 0);
     }
 
     public float getCurrent() {
-        return current;
+        return getValue("current", 0);
     }
 
     public float getDischargeCurrent() {
-        return dischargeCurrent;
+        return getValue("dischargeCurrent", 0);
+    }
+
+    private float getValue(String key, int index) {
+        if (currentMeasurements.containsKey(key)) {
+            return currentMeasurements.get(key).values[index];
+        } else {
+            return Float.NaN;
+        }
     }
 }

@@ -23,35 +23,24 @@ public class DeviceFactory {
     private final SensorManager sensorManager;
     private final LocationManager locationManager;
     private final Battery battery;
-    private boolean useActivityRules;
 
 
-    public DeviceFactory(Context context, Settings settings, boolean useActivityRules) {
+    public DeviceFactory(Context context, Settings settings) {
         this.telephonyManager = (TelephonyManager) context.getSystemService(TELEPHONY_SERVICE);
         this.sensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
         this.locationManager = (LocationManager) context.getSystemService(LOCATION_SERVICE);
         this.battery = new Battery(context);
-        this.useActivityRules = useActivityRules;
 
-        PhidgetSensor sensor = new PhidgetSensor(settings);
-
-        if (useActivityRules) {
-            sensor.addDischargeRule(new DischargeRule());
-            sensor.addChargeRule(new ChargingRule());
-        }
-        this.phidgetBoard = new PhidgetBoard(context, sensor);
+        this.phidgetBoard = new PhidgetBoard(context, settings);
     }
 
     @SuppressLint("HardwareIds")
-    public SensorKit assembleSensorKit(long minTimeBetweenGPSUpdates, float minDistanceBetweenGPSUpdates, final long
-            measurementDelay) {
+    public SensorKit assembleSensorKit(long minTimeBetweenGPSUpdates, float minDistanceBetweenGPSUpdates, final long measurementDelay, boolean alwaysOn) {
         SensorKit kit = new SensorKit(phidgetBoard, telephonyManager.getDeviceId(), measurementDelay);
         PhoneSensor accelerationSensor = new PhoneSensor(sensorManager, Sensor.TYPE_LINEAR_ACCELERATION, 3);
         accelerationSensor.addActiveStateRule(new AccelerationRule());
         kit.addAccelerationSensor(accelerationSensor);
-        PhoneSensor rotationSensor = new PhoneSensor(sensorManager, Sensor.TYPE_ROTATION_VECTOR, 4);
-        rotationSensor.addActiveStateRule(new BlockingRule());
-        kit.addRotationSensor(rotationSensor);
+        kit.addRotationSensor(new PhoneSensor(sensorManager, Sensor.TYPE_ROTATION_VECTOR, 4));
         kit.addBatterySensor(battery);
         Criteria criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
@@ -65,9 +54,11 @@ public class DeviceFactory {
         } else {
             SensorDCLog.e(TAG, "No location provider found");
         }
-        if (useActivityRules) {
+        if (!alwaysOn) {
             kit.addActiveStateRule(new StandByMeasurementsRule());
             kit.addActiveStateRule(new CooldownRule());
+        } else {
+            kit.addActiveStateRule(new AlwaysOnRule());
         }
 
         return kit;

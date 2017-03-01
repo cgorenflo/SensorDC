@@ -3,27 +3,28 @@ package com.sensordc.sensors;
 import android.content.Context;
 import com.phidgets.InterfaceKitPhidget;
 import com.phidgets.PhidgetException;
-import com.phidgets.event.AttachEvent;
-import com.phidgets.event.AttachListener;
-import com.phidgets.event.DetachEvent;
-import com.phidgets.event.DetachListener;
 import com.sensordc.logging.SensorDCLog;
-
-import java.util.Locale;
+import com.sensordc.settings.Calibration;
+import com.sensordc.settings.Settings;
+import org.jetbrains.annotations.NotNull;
+import rx.functions.Func1;
 
 class PhidgetBoard {
 
     private static final String TAG = PhidgetBoard.class.getSimpleName();
     private final Context context;
-    private final PhidgetSensor phidgetSensor;
+    PhidgetSensor currentSensor;
+    PhidgetSensor dischargeCurrentSensor;
+    PhidgetSensor voltageSensor;
+    PhidgetSensor ambientTemperatureSensor;
+    PhidgetSensor batteryTemperatureSensor;
+    private Settings settings;
     private InterfaceKitPhidget phidget;
-    private AttachListener phidgetAttachListener;
-    private DetachListener phidgetDetachListener;
 
 
-    PhidgetBoard(Context context, PhidgetSensor sensor) {
+    PhidgetBoard(Context context, Settings settings) {
         this.context = context;
-        this.phidgetSensor = sensor;
+        this.settings = settings;
     }
 
     void initialize() {
@@ -32,11 +33,7 @@ class PhidgetBoard {
             com.phidgets.usb.Manager.Initialize(this.context);
 
             this.phidget = new InterfaceKitPhidget();
-            initializeListeners();
-
-            this.phidget.addAttachListener(this.phidgetAttachListener);
-            this.phidget.addDetachListener(this.phidgetDetachListener);
-            this.phidget.addSensorChangeListener(this.phidgetSensor);
+            initializeSensors();
 
             this.phidget.openAny();
 
@@ -46,41 +43,50 @@ class PhidgetBoard {
         }
     }
 
-    private void initializeListeners() {
-        this.phidgetAttachListener = new AttachListener() {
-            public void attached(final AttachEvent event) {
-                try {
-                    setSensorSensitivityToMax((InterfaceKitPhidget) event.getSource());
-                    SensorDCLog.i(TAG, String.format(Locale.CANADA, "%s attached", event.getSource().getDeviceName()));
-                } catch (PhidgetException e) {
-                    SensorDCLog.e(TAG, "Phidget attach event failed.", e);
-                }
+    private float interpolateTemperature(int value, float t1Calibration, float t2Calibration, float v1Calibration,
+                                         float v2Calibration) {
+        float a = (t1Calibration - t2Calibration) / (v1Calibration - v2Calibration);
+        float b = (t2Calibration * v1Calibration - t1Calibration * v2Calibration) / (v1Calibration - v2Calibration);
+        return a * value + b;
+    }
+
+    private void initializeSensors() {
+        this.currentSensor = new PhidgetSensor(0, phidget);
+        this.currentSensor.addActiveStateRule(new ChargingRule());
+
+        this.voltageSensor = new PhidgetSensor(1, phidget);
+        this.voltageSensor.setTransformation(new Func1<Integer, Float>() {
+            @Override
+            public Float call(Integer value) {
+                return ((value / 200f) - 2.5f) / 0.0681f;
             }
+        });
 
-            private void setSensorSensitivityToMax(InterfaceKitPhidget phidget) throws PhidgetException {
-                phidget.setSensorChangeTrigger(0, 1);
-                phidget.setSensorChangeTrigger(1, 1);
-                phidget.setSensorChangeTrigger(2, 1);
-                phidget.setSensorChangeTrigger(3, 1);
-                phidget.setSensorChangeTrigger(4, 1);
-            }
-        };
+        final Calibration ambientCal = this.settings.getAmbientCalibration();
 
+        this.ambientTemperatureSensor = new PhidgetSensor(2, phidget);
+        this.ambientTemperatureSensor.setTransformation(getTemperatureTransformation(ambientCal));
 
-        this.phidgetDetachListener = new DetachListener() {
-            public void detached(final DetachEvent event) {
-                PhidgetBoard.this.phidgetSensor.clearValues();
-                SensorDCLog.i(TAG, "Phidget detached.");
+        Calibration batteryCal = this.settings.getBatteryCalibration();
+        this.batteryTemperatureSensor = new PhidgetSensor(3, phidget);
+        this.batteryTemperatureSensor.setTransformation(getTemperatureTransformation(batteryCal));
+
+        this.dischargeCurrentSensor = new PhidgetSensor(4, phidget);
+        this.dischargeCurrentSensor.addActiveStateRule(new DischargeRule());
+    }
+
+    @NotNull
+    private Func1<Integer, Float> getTemperatureTransformation(final Calibration calibration) {
+        return new Func1<Integer, Float>() {
+            @Override
+            public Float call(Integer value) {
+                return interpolateTemperature(value, calibration.T1, calibration.T2, calibration.V1, calibration.V2);
             }
         };
     }
 
     void stop() {
         try {
-            this.phidget.removeAttachListener(this.phidgetAttachListener);
-            this.phidget.removeDetachListener(this.phidgetDetachListener);
-            this.phidget.removeSensorChangeListener(this.phidgetSensor);
-
             this.phidget.close();
             SensorDCLog.i(TAG, "Phidget stopped.");
         } catch (PhidgetException e) {
@@ -88,29 +94,5 @@ class PhidgetBoard {
         } finally {
             com.phidgets.usb.Manager.Uninitialize();
         }
-    }
-
-    float getBatteryTemperature() {
-        return this.phidgetSensor.getBatteryTemperature().values[0];
-    }
-
-    float getAmbientTemperature() {
-        return this.phidgetSensor.getAmbientTemperature().values[0];
-    }
-
-    float getVoltage() {
-        return this.phidgetSensor.getVoltage().values[0];
-    }
-
-    float getCurrent() {
-        return this.phidgetSensor.getCurrent().values[0];
-    }
-
-    float getDischargeCurrent() {
-        return this.phidgetSensor.getDischargeCurrent().values[0];
-    }
-
-    boolean foundActivity() {
-        return this.phidgetSensor.getCurrent().activityFound || this.phidgetSensor.getDischargeCurrent().activityFound;
     }
 }

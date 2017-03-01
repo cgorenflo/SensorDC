@@ -14,14 +14,13 @@ class DischargeRule implements Rule<Measurement> {
         return !Float.isNaN(measurement.values[0]) && measurement.values[0] <=
                 DISCHARGE_CURRENT_INACTIVE_LOWER_THRESHOLD && measurement.values[0] >=
                 DISCHARGE_CURRENT_INACTIVE_HIGHER_THRESHOLD;
-
     }
-
 }
 
 class ChargingRule implements Rule<Measurement> {
     private static final float CURRENT_INACTIVE_THRESHOLD = 50f;
 
+    @Override
     public boolean validate(Measurement measurement) {
         return !Float.isNaN(measurement.values[0]) && measurement.values[0] >= CURRENT_INACTIVE_THRESHOLD;
     }
@@ -37,7 +36,7 @@ class StandByMeasurementsRule implements Rule<Boolean> {
         } else {
             executionCount = 0;
         }
-        
+
         return executionCount <= 5;
     }
 }
@@ -47,6 +46,7 @@ class CooldownRule implements Rule<Boolean> {
     private long lastActiveTimeInMillis = -1;
     private int activeMeasurements = 0;
     private int inactiveMeasurements = 0;
+    private boolean wasActiveLongEnough = false;
 
     @Override
     public boolean validate(Boolean anySensorActive) {
@@ -59,8 +59,10 @@ class CooldownRule implements Rule<Boolean> {
             return true;
         } else {
             inactiveMeasurements++;
-            boolean wasActiveLongEnough = activeMeasurements / (float) (activeMeasurements + inactiveMeasurements) >
-                    0.5 && activeMeasurements + inactiveMeasurements > 60;
+            if (!wasActiveLongEnough) {
+                wasActiveLongEnough = activeMeasurements + inactiveMeasurements > 30 && activeMeasurements / (float)
+                        (activeMeasurements + inactiveMeasurements) > 0.5;
+            }
             int FIVE_MINUTES = 5 * 60 * 1000;
             return System.currentTimeMillis() - lastActiveTimeInMillis < FIVE_MINUTES && wasActiveLongEnough;
         }
@@ -75,10 +77,11 @@ class AccelerationRule implements Rule<Measurement> {
     }
 }
 
-class BlockingRule implements Rule<Measurement> {
+class AlwaysOnRule implements Rule<Boolean> {
 
     @Override
-    public boolean validate(Measurement input) {
-        return false;
+    public boolean validate(Boolean input) {
+        return true;
     }
 }
+

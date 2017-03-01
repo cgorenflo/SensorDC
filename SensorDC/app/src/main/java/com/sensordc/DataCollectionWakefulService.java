@@ -45,15 +45,16 @@ public class DataCollectionWakefulService extends IntentService {
 
     private void handleDataCollection() {
         SensorDCLog.d(TAG, "Creating sensor managers.");
-        Settings settings = new Settings(
-                getSharedPreferences(getResources().getString(R.string.settingPreferenceName), MODE_PRIVATE));
+        Settings settings = new Settings(getSharedPreferences(getResources().getString(R.string
+                .settingPreferenceName), MODE_PRIVATE));
 
-        DeviceFactory factory = new DeviceFactory(this, settings, true);
+        DeviceFactory factory = new DeviceFactory(this, settings);
 
         int minDistanceBetweenGPSUpdates = getResources().getInteger(R.integer.minDistanceBetweenGPSUpdates);
         int minTimeBetweenGPSUpdates = getResources().getInteger(R.integer.minTimeBetweenGPSUpdatesInMS);
         int delay = getResources().getInteger(R.integer.sensorRecordingDelayInMS);
-        SensorKit sensorKit = factory.assembleSensorKit(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates, delay);
+        SensorKit sensorKit = factory.assembleSensorKit(minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates,
+                delay, false);
 
         SensorDCLog.d(TAG, "Logging sensor values.");
 

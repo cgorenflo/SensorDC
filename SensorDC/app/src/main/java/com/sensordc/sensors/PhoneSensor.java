@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-class PhoneSensor implements SensorEventListener {
+class PhoneSensor implements SensorEventListener, WebikeSensor {
     private static final String TAG = PhoneSensor.class.getSimpleName();
     private final int sensorType;
     private final SensorManager sensorManager;
@@ -40,7 +40,7 @@ class PhoneSensor implements SensorEventListener {
     public void onAccuracyChanged(android.hardware.Sensor sensor, int i) {
     }
 
-    void initialize() {
+    public void initialize() {
         Sensor sensor = this.sensorManager.getDefaultSensor(this.sensorType);
         registerSensorListener(sensor);
     }
@@ -55,14 +55,14 @@ class PhoneSensor implements SensorEventListener {
         }
     }
 
-    void stop() {
+    public void stop() {
         if (isRegistered) {
             this.sensorManager.unregisterListener(this);
             SensorDCLog.i(TAG, String.format(Locale.CANADA, "Sensor %d unregistered.", sensorType));
         }
     }
 
-    Measurement measure() {
+    public Measurement measure() {
         //sensorEvent might change while executing this method, so store a local reference to current values
         SensorEvent event = sensorEvent;
         if (!updated) {
@@ -72,18 +72,17 @@ class PhoneSensor implements SensorEventListener {
         Measurement m = new Measurement();
         m.timestamp = event.timestamp;
         m.values = event.values;
-        m.activityFound = activeStateRules.isEmpty();
+        m.activityFound = !activeStateRules.isEmpty();
 
         for (Rule<Measurement> rule : activeStateRules) {
             if (rule.validate(m)) {
                 m.activityFound = true;
-                break;
             }
         }
         return m;
     }
 
-    void addActiveStateRule(Rule<Measurement> activeStateRule) {
+    public void addActiveStateRule(Rule<Measurement> activeStateRule) {
         activeStateRules.add(activeStateRule);
     }
 }
