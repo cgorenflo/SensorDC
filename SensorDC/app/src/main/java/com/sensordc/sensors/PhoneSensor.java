@@ -72,7 +72,7 @@ class PhoneSensor implements SensorEventListener, WebikeSensor {
         Measurement m = new Measurement();
         m.timestamp = event.timestamp;
         m.values = event.values;
-        m.activityFound = !activeStateRules.isEmpty();
+        m.activityFound = false;
 
         for (Rule<Measurement> rule : activeStateRules) {
             if (rule.validate(m)) {

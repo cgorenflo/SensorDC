@@ -123,13 +123,12 @@ public class SensorKit {
     }
 
     private boolean foundActivity() {
-        boolean kitIsActive = !activeStateRules.isEmpty();
+        boolean kitIsActive = false;
         for (Rule<Boolean> activeStateRule : activeStateRules) {
             if (activeStateRule.validate(anySensorShowsActiveState)) {
                 kitIsActive = true;
             }
         }
-
         return this.isInitialized && (anySensorShowsActiveState || kitIsActive);
     }
 

@@ -38,6 +38,9 @@ public class SensorDCLog {
 
             dataLogs.add(output);
         }
+        if (dataLogs.size() > 100) {
+            flush();
+        }
     }
 
     private static String getCurrentTimeStamp(String pattern) {

@@ -44,9 +44,6 @@ class StandByMeasurementsRule implements Rule<Boolean> {
 class CooldownRule implements Rule<Boolean> {
 
     private long lastActiveTimeInMillis = -1;
-    private int activeMeasurements = 0;
-    private int inactiveMeasurements = 0;
-    private boolean wasActiveLongEnough = false;
 
     @Override
     public boolean validate(Boolean anySensorActive) {
@@ -55,16 +52,10 @@ class CooldownRule implements Rule<Boolean> {
         }
         if (anySensorActive) {
             lastActiveTimeInMillis = System.currentTimeMillis();
-            activeMeasurements++;
             return true;
         } else {
-            inactiveMeasurements++;
-            if (!wasActiveLongEnough) {
-                wasActiveLongEnough = activeMeasurements + inactiveMeasurements > 30 && activeMeasurements / (float)
-                        (activeMeasurements + inactiveMeasurements) > 0.5;
-            }
             int FIVE_MINUTES = 5 * 60 * 1000;
-            return System.currentTimeMillis() - lastActiveTimeInMillis < FIVE_MINUTES && wasActiveLongEnough;
+            return System.currentTimeMillis() - lastActiveTimeInMillis < FIVE_MINUTES;
         }
     }
 }
